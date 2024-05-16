@@ -1,5 +1,9 @@
 from django.contrib.auth.models import Group, User
 from rest_framework import permissions, viewsets
+from rest_framework.decorators import action
+from rest_framework.routers import Response
+
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from core.models import (
     ProductCategory,
@@ -35,6 +39,8 @@ from core.serializers import (
     ProductOrderDeliverySerializer,
 )
 
+from core.permissions import IsAdminUser, IsSelf
+
 # from django.contrib.auth import get_user_model
 
 # User = get_user_model()
@@ -47,7 +53,25 @@ class UserViewSet(viewsets.ModelViewSet):
 
     queryset = User.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
+
+    def get_permissions(self):
+        if self.action == "register":
+            self.permission_classes = [AllowAny]
+        elif self.action == "destroy":
+            self.permission_classes = [IsAuthenticated, IsSelf | IsAdminUser]
+        else:
+            self.permission_classes = [IsAuthenticated, IsAdminUser]
+        return super().get_permissions()
+
+    @action(detail=False, methods=["post"])
+    def register(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        return Response(
+            {"user": UserSerializer(user, context=self.get_serializer_context()).data}
+        )
 
 
 class GroupViewSet(viewsets.ModelViewSet):
@@ -57,7 +81,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 
     queryset = Group.objects.all().order_by("name")
     serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
 
 
 class ProductCategoryViewSet(viewsets.ModelViewSet):
