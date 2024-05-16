@@ -1,5 +1,10 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+
+class ExtendedUser(AbstractUser):
+    address = models.CharField(max_length=255, blank=True, null=True)
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
 
 
 class ProductCategory(models.Model):
@@ -59,7 +64,7 @@ class SalePointProductOrder(models.Model):
 
 class SalePointUser(models.Model):
     sale_point = models.ForeignKey(SalePoint, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(ExtendedUser, on_delete=models.CASCADE)
 
 
 class Carrier(models.Model):
@@ -68,7 +73,7 @@ class Carrier(models.Model):
 
 class CarrierUser(models.Model):
     carrier = models.ForeignKey(Carrier, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(ExtendedUser, on_delete=models.CASCADE)
 
 
 class Delivery(models.Model):

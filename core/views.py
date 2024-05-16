@@ -1,4 +1,4 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth.models import Group
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.routers import Response
@@ -41,9 +41,9 @@ from core.serializers import (
 
 from core.permissions import IsAdminUser, IsSelf
 
-# from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model
 
-# User = get_user_model()
+ExtendedUser = get_user_model()
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -51,9 +51,8 @@ class UserViewSet(viewsets.ModelViewSet):
     API endpint that allows users to be viewed or edited.
     """
 
-    queryset = User.objects.all().order_by("-date_joined")
+    queryset = ExtendedUser.objects.all().order_by("-date_joined")
     serializer_class = UserSerializer
-    permission_classes = [permissions.AllowAny]
 
     def get_permissions(self):
         if self.action == "register":

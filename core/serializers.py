@@ -1,4 +1,5 @@
-from django.contrib.auth.models import Group, User
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from rest_framework import serializers
 
 from core.models import (
@@ -19,15 +20,22 @@ from core.models import (
     ProductOrderDelivery,
 )
 
+ExtendedUser = get_user_model()
+
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
-        model = User
+        model = ExtendedUser
         fields = ["url", "username", "email", "groups"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
+        user = ExtendedUser.objects.create_user(**validated_data)
+
+        # Add the user to the default group
+        default_group, created = Group.objects.get_or_create(name="user")
+        user.groups.add(default_group)
+
         return user
 
 
