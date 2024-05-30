@@ -39,7 +39,7 @@ from core.serializers import (
     ProductOrderDeliverySerializer,
 )
 
-from core.permissions import IsAdminUser, IsSelf
+from core.permissions import CanDeleteProduct, IsAdminUser, IsFactoryGroup, IsSelf
 
 from django.contrib.auth import get_user_model
 
@@ -90,7 +90,18 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
 
     queryset = ProductCategory.objects.all().order_by("name")
     serializer_class = ProductCategorySerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsFactoryGroup]
+
+    def get_permissions(self):
+        if self.action == "list" or self.action == "retrieve":
+            self.permission_classes = [permissions.IsAuthenticated]
+        elif self.action == "create":
+            self.permission_classes = [IsFactoryGroup]
+        elif self.action == "destroy":
+            self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+        else:
+            self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+        return super().get_permissions()
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -101,6 +112,17 @@ class ProductViewSet(viewsets.ModelViewSet):
     queryset = Product.objects.all().order_by("name")
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == "list" or self.action == "retrieve":
+            self.permission_classes = [permissions.IsAuthenticated]
+        elif self.action == "create":
+            self.permission_classes = [IsFactoryGroup]
+        elif self.action == "destroy":
+            self.permission_classes = [permissions.IsAuthenticated, CanDeleteProduct]
+        else:
+            self.permission_classes = [permissions.IsAuthenticated]
+        return super().get_permissions()
 
 
 class FactoryViewSet(viewsets.ModelViewSet):
