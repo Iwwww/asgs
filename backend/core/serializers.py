@@ -24,19 +24,36 @@ ExtendedUser = get_user_model()
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    roles = serializers.SerializerMethodField()
+
     class Meta:
         model = ExtendedUser
-        fields = ["url", "username", "email", "groups"]
+        fields = ["url", "username", "password", "email", "groups", "roles"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
-        user = ExtendedUser.objects.create_user(**validated_data)
+        password = validated_data.pop("password")
+        groups_data = validated_data.pop("groups", [])
+        user = ExtendedUser(**validated_data)
+        user.set_password(password)
+        user.save()
 
-        # Add the user to the default group
+        user.groups.set(groups_data)
+
         default_group, created = Group.objects.get_or_create(name="user")
         user.groups.add(default_group)
 
         return user
+
+    def get_roles(self, obj):
+        roles = []
+        if obj.groups.filter(name="factory_admin").exists():
+            roles.append("factory_admin")
+        if obj.groups.filter(name="sale_point_admin").exists():
+            roles.append("sale_point_admin")
+        if obj.groups.filter(name="carrier_admin").exists():
+            roles.append("carrier_admin")
+        return roles
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):

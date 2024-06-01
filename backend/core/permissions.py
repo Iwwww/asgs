@@ -58,3 +58,18 @@ class CanDeleteProduct(permissions.BasePermission):
             ),
         )
         return not factory_products.exists()
+
+
+class IsSalePointAdmin(permissions.BasePermission):
+    """
+    Custom permission to only allow sale point admins to create product orders.
+    """
+
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.groups.filter(name="sale_point_admin").exists()
+        )

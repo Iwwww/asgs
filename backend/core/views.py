@@ -1,4 +1,7 @@
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import Group
+from django.core.exceptions import ValidationError
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.routers import Response
@@ -39,7 +42,13 @@ from core.serializers import (
     ProductOrderDeliverySerializer,
 )
 
-from core.permissions import CanDeleteProduct, IsAdminUser, IsFactoryGroup, IsSelf
+from core.permissions import (
+    CanDeleteProduct,
+    IsAdminUser,
+    IsFactoryGroup,
+    IsSalePointAdmin,
+    IsSelf,
+)
 
 from django.contrib.auth import get_user_model
 
@@ -48,7 +57,7 @@ ExtendedUser = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
     """
-    API endpint that allows users to be viewed or edited.
+    API endpoint that allows users to be viewed or edited.
     """
 
     queryset = ExtendedUser.objects.all().order_by("-date_joined")
@@ -163,6 +172,23 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
     queryset = ProductOrder.objects.all()
     serializer_class = ProductOrderSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_permissions(self):
+        if self.action == "create":
+            self.permission_classes = [IsAuthenticated, IsSalePointAdmin]
+        else:
+            self.permission_classes = [IsAuthenticated]
+        return super().get_permissions()
+
+    def perform_create(self, serializer):
+        product = serializer.validated_data["product"]
+        # Проверяем, что продукт добавлен фабрикой
+        factory_product_exists = FactoryProducts.objects.filter(
+            product=product
+        ).exists()
+        if not factory_product_exists:
+            raise ValidationError("The product must be added by a factory.")
+        serializer.save()
 
 
 class SalePointViewSet(viewsets.ModelViewSet):
