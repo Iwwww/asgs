@@ -6,6 +6,19 @@ class ExtendedUser(AbstractUser):
     address = models.CharField(max_length=255, blank=True, null=True)
     phone_number = models.CharField(max_length=15, blank=True, null=True)
 
+    def get_role(self):
+        role = ""
+        if self.groups.filter(name="factory").exists():
+            role = "factory"
+        if self.groups.filter(name="sale_point").exists():
+            role = "sale_point"
+        if self.groups.filter(name="carrier").exists():
+            role = "carrier"
+        return role
+
+    def get_groups(self):
+        return [group.name for group in self.groups.all()]
+
 
 class ProductCategory(models.Model):
     name = models.CharField(max_length=100)

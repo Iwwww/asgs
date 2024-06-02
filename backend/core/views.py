@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.routers import Response
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.views import APIView
 
 from core.models import (
     ProductCategory,
@@ -69,7 +70,7 @@ class UserViewSet(viewsets.ModelViewSet):
         elif self.action == "destroy":
             self.permission_classes = [IsAuthenticated, IsSelf | IsAdminUser]
         else:
-            self.permission_classes = [IsAuthenticated, IsAdminUser]
+            self.permission_classes = [IsAuthenticated | IsAdminUser]
         return super().get_permissions()
 
     @action(detail=False, methods=["post"])
@@ -80,6 +81,18 @@ class UserViewSet(viewsets.ModelViewSet):
         return Response(
             {"user": UserSerializer(user, context=self.get_serializer_context()).data}
         )
+
+
+class UserInfoView(APIView):
+    def get(self, request):
+        user = request.user
+        user_data = {
+            "username": user.username,
+            "email": user.email,
+            "role": user.get_role(),
+            "groups": user.get_groups(),
+        }
+        return Response(user_data)
 
 
 class GroupViewSet(viewsets.ModelViewSet):
