@@ -33,7 +33,9 @@ const App: React.FC = () => {
         />
         <Route
           path="/factory"
-          element={isAuthenticated ? <FactoryPage /> : <Navigate to="/login" />}
+          element={
+            isAuthenticated ? <FactoryPageTest /> : <Navigate to="/login" />
+          }
         />
         <Route
           path="/carrier"
@@ -45,7 +47,16 @@ const App: React.FC = () => {
             isAuthenticated ? <SalePointPage /> : <Navigate to="/login" />
           }
         />
-        <Route path="*" element={<Navigate to="/login" />} />
+        <Route
+          path="*"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
       </Routes>
     </Router>
   );
