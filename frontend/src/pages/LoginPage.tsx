@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +27,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@radix-ui/react-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect } from "react";
+import { Label } from "@radix-ui/react-label";
 
 const formSchema = z.object({
   username: z.string().min(4).max(15),
@@ -99,18 +100,27 @@ export function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="grid h-screen place-items-center">
-      <Card className="w-[400px]">
-        <CardHeader>
-          <CardTitle className="text-center">Вход</CardTitle>
-          <CardDescription className="text-center">
-            Необходимо войти, чтобы продолжить
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
+      <div className="flex items-center justify-center py-12 mb-20">
+        <div className="mx-auto grid w-[350px] gap-6">
+          <div className="grid gap-2 text-center">
+            <h1 className="text-3xl font-bold">Вход</h1>{" "}
+            <p className="text-balance text-muted-foreground">
+              Необходимо войти, чтобы продолжить
+            </p>
+          </div>
           <LoginForm />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+      <div className="hidden bg-muted lg:block">
+        <img
+          src="/lockscreen.jpeg"
+          alt="Image"
+          width="1920"
+          height="1080"
+          className="h-full w-full object-cover dark:brightness-[0.2] dark:grayscale object-contain"
+        />
+      </div>
     </div>
   );
 }
