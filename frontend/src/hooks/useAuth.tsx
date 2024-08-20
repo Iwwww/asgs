@@ -18,12 +18,14 @@ export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
       setIsAuthenticated(true);
-      fetchUserInfo(token);
+      fetchUserInfo(storedToken);
     } else {
       setLoading(false);
     }
@@ -37,7 +39,7 @@ export const useAuth = () => {
         },
       });
       setUser(response.data);
-    } catch (error) {
+    } catch (error: any) {
       console.error(
         "Error fetching user info:",
         error.response?.data || error.message,
@@ -58,10 +60,12 @@ export const useAuth = () => {
         `${API_URL}/api-token-auth/`,
         { username, password },
       );
-      localStorage.setItem("token", response.data.token);
+      const { token } = response.data;
+      localStorage.setItem("token", token);
+      setToken(token);
       setIsAuthenticated(true);
-      fetchUserInfo(response.data.token);
-    } catch (error) {
+      fetchUserInfo(token);
+    } catch (error: any) {
       console.error("Login error:", error.response?.data || error.message);
       throw error;
     }
@@ -69,7 +73,7 @@ export const useAuth = () => {
 
   const logout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("role");
+    setToken(null);
     setIsAuthenticated(false);
     setUser(null);
   };
@@ -78,6 +82,7 @@ export const useAuth = () => {
     isAuthenticated,
     user,
     loading,
+    token,
     login,
     logout,
   };

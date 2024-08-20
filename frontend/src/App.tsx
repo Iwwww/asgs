@@ -11,6 +11,7 @@ import FactoryPage from "./pages/FactoryPage";
 import CarrierPage from "./pages/CarrierPage";
 import SalePointPage from "./pages/SalePointPage";
 import { useAuth } from "./hooks/useAuth";
+import FactoryPageTest from "./pages/FactoryPage.tsx";
 
 const App: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
