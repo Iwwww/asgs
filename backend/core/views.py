@@ -116,9 +116,15 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "list" or self.action == "retrieve":
-            self.permission_classes = [permissions.IsAuthenticated]
+            self.permission_classes = [
+                permissions.IsAuthenticated,
+                IsAuthenticated | IsFactoryGroup,
+            ]
         elif self.action == "create":
-            self.permission_classes = [IsFactoryGroup]
+            self.permission_classes = [
+                permissions.IsAuthenticated,
+                IsAdminUser | IsFactoryGroup,
+            ]
         elif self.action == "destroy":
             self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
         else:
@@ -137,13 +143,19 @@ class ProductViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "list" or self.action == "retrieve":
-            self.permission_classes = [permissions.IsAuthenticated]
+            self.permission_classes = [
+                permissions.IsAuthenticated,
+                IsAuthenticated | IsFactoryGroup | IsSalePointAdmin,
+            ]
         elif self.action == "create":
-            self.permission_classes = [IsFactoryGroup]
+            self.permission_classes = [
+                permissions.IsAuthenticated,
+                IsAdminUser | IsFactoryGroup,
+            ]
         elif self.action == "destroy":
-            self.permission_classes = [permissions.IsAuthenticated, CanDeleteProduct]
+            self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
         else:
-            self.permission_classes = [permissions.IsAuthenticated]
+            self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
         return super().get_permissions()
 
 
