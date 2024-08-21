@@ -1,8 +1,7 @@
 import axios from "axios";
 import { useAuth } from "./useAuth";
 import { useCallback } from "react";
-
-const API_URL = "http://localhost:8000";
+import { API_URL } from "@/api/constants";
 
 export interface Product {
   id: number;
