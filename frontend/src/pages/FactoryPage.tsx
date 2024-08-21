@@ -63,6 +63,7 @@ import SideBar from "./SideBar";
 import { useApi, Product, Category } from "@/hooks/useApi";
 import EditProduct from "@/components/ui/EditProduct";
 import AddProduct from "@/components/ui/AddProduct";
+import DeleteProduct from "@/components/ui/DeleteProduct";
 
 export default function FactoryPageTest() {
   const { getProducts, getCategories, postProduct } = useApi();
@@ -259,13 +260,13 @@ export default function FactoryPageTest() {
                                   <DropdownMenuLabel>
                                     Действия
                                   </DropdownMenuLabel>
-                                  <EditProduct
-                                    product={product}
-                                    categories={categories}
-                                  />
-                                  <DropdownMenuItem>
-                                    <Button variant="ghost">Удалить</Button>
-                                  </DropdownMenuItem>
+                                  <div className="flex flex-col">
+                                    <EditProduct
+                                      product={product}
+                                      categories={categories}
+                                    />
+                                    <DeleteProduct productId={product.id} />
+                                  </div>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>

@@ -151,13 +151,12 @@ class ProductViewSet(viewsets.ModelViewSet):
             self.action == "create"
             or self.action == "update"
             or self.action == "partial_update"
+            or self.action == "destroy"
         ):
             self.permission_classes = [
                 permissions.IsAuthenticated,
                 IsAdminUser | IsFactoryGroup,
             ]
-        elif self.action == "destroy":
-            self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
         else:
             self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
         return super().get_permissions()

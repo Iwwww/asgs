@@ -121,6 +121,33 @@ export const useApi = () => {
     [token],
   );
 
+  const deleteProduct = useCallback(
+    async (productId: number): Promise<Product> => {
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      try {
+        const response = await axios.delete<Product>(
+          `${API_URL}/product/${productId}/`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error(
+          "Error delete product:",
+          error.response?.data || error.message,
+        );
+        throw error;
+      }
+    },
+    [token],
+  );
+
   const getCategories = useCallback(async (): Promise<Category[]> => {
     if (!token) throw new Error("No authentication token found");
     try {
@@ -149,6 +176,7 @@ export const useApi = () => {
     getProducts,
     putProduct,
     postProduct,
+    deleteProduct,
     getCategories,
   };
 };
