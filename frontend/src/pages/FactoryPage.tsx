@@ -62,9 +62,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SideBar from "./SideBar";
 import { useApi, Product, Category } from "@/hooks/useApi";
 import EditProduct from "@/components/ui/EditProduct";
+import AddProduct from "@/components/ui/AddProduct";
 
 export default function FactoryPageTest() {
-  const { getProducts, getCategories } = useApi();
+  const { getProducts, getCategories, postProduct } = useApi();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -196,12 +197,7 @@ export default function FactoryPageTest() {
                     Export
                   </span>
                 </Button>
-                <Button size="sm" className="h-8 gap-1">
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Add Product
-                  </span>
-                </Button>
+                <AddProduct categories={categories} addProduct={postProduct} />
               </div>
             </div>
             <TabsContent value="all">

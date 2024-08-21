@@ -39,7 +39,7 @@ interface CategoryResponse {
   - [ ] product info
   - [ ] fetch products in warehouse
   - [ ] add product
-  - [w] update product
+  - [x] update product
   - [w] update product permission denay handle
 */
 export const useApi = () => {
@@ -94,6 +94,34 @@ export const useApi = () => {
     [token],
   );
 
+  const postProduct = useCallback(
+    async (newProduct: Product): Promise<Product> => {
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      try {
+        const response = await axios.post<Product>(
+          `${API_URL}/product/`,
+          newProduct,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error(
+          "Error post product:",
+          error.response?.data || error.message,
+        );
+        throw error;
+      }
+    },
+    [token],
+  );
+
   const getCategories = useCallback(async (): Promise<Category[]> => {
     if (!token) throw new Error("No authentication token found");
     try {
@@ -116,12 +144,12 @@ export const useApi = () => {
   }, [token]);
 
   const getProductInfo = async (productId: number) => {};
-  const addProduct = async (product: Product) => {};
   const updateProduct = async (product: Product) => {};
 
   return {
     getProducts,
     putProduct,
+    postProduct,
     getCategories,
   };
 };
