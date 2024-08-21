@@ -147,7 +147,11 @@ class ProductViewSet(viewsets.ModelViewSet):
                 permissions.IsAuthenticated,
                 IsAuthenticated | IsFactoryGroup | IsSalePointAdmin,
             ]
-        elif self.action == "create":
+        elif (
+            self.action == "create"
+            or self.action == "update"
+            or self.action == "partial_update"
+        ):
             self.permission_classes = [
                 permissions.IsAuthenticated,
                 IsAdminUser | IsFactoryGroup,

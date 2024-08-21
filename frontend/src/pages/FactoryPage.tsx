@@ -61,6 +61,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SideBar from "./SideBar";
 import { useApi, Product, Category } from "@/hooks/useApi";
+import EditProduct from "@/components/ui/EditProduct";
 
 export default function FactoryPageTest() {
   const { getProducts, getCategories } = useApi();
@@ -186,7 +187,7 @@ export default function FactoryPageTest() {
             <div className="flex items-center">
               <TabsList>
                 <TabsTrigger value="all">Все товары</TabsTrigger>
-                <TabsTrigger value="active">На складе</TabsTrigger>
+                <TabsTrigger value="warehouse">На складе</TabsTrigger>
               </TabsList>
               <div className="ml-auto flex items-center gap-2">
                 <Button size="sm" variant="outline" className="h-8 gap-1">
@@ -206,8 +207,8 @@ export default function FactoryPageTest() {
             <TabsContent value="all">
               <Card>
                 <CardHeader>
-                  <CardTitle>Продукты</CardTitle>
-                  <CardDescription>Управление продуктами</CardDescription>
+                  <CardTitle>Товары</CardTitle>
+                  <CardDescription>Управление товарами</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {loading ? (
@@ -235,7 +236,7 @@ export default function FactoryPageTest() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {products.map((product, index) => (
+                        {products.map((product: Product, index: number) => (
                           <TableRow key={index}>
                             <TableCell className="font-medium">
                               {product.name}
@@ -244,7 +245,7 @@ export default function FactoryPageTest() {
                               {findCategoryName(product.category)}
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
-                              ${product.price}
+                              ₽{product.price}
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
                               {product.weight}
@@ -269,8 +270,13 @@ export default function FactoryPageTest() {
                                   <DropdownMenuLabel>
                                     Действия
                                   </DropdownMenuLabel>
-                                  <DropdownMenuItem>Изменить</DropdownMenuItem>
-                                  <DropdownMenuItem>Удалить</DropdownMenuItem>
+                                  <EditProduct
+                                    product={product}
+                                    categories={categories}
+                                  />
+                                  <DropdownMenuItem>
+                                    <Button variant="ghost">Удалить</Button>
+                                  </DropdownMenuItem>
                                 </DropdownMenuContent>
                               </DropdownMenu>
                             </TableCell>
@@ -285,6 +291,14 @@ export default function FactoryPageTest() {
                     Показано <strong>{products.length}</strong> продукта
                   </div>
                 </CardFooter>
+              </Card>
+            </TabsContent>
+            <TabsContent value="warehouse">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Товары на складе</CardTitle>
+                  <CardDescription>Управление товарами</CardDescription>
+                </CardHeader>
               </Card>
             </TabsContent>
           </Tabs>

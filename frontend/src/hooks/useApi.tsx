@@ -5,6 +5,7 @@ import { useCallback } from "react";
 const API_URL = "http://localhost:8000";
 
 export interface Product {
+  id: number;
   name: string;
   price: number;
   category: string;
@@ -22,6 +23,7 @@ interface ProductResponse {
 export interface Category {
   id: number;
   name: string;
+  description: string;
 }
 
 interface CategoryResponse {
@@ -33,16 +35,17 @@ interface CategoryResponse {
 
 /* TODO:
   - [x] fetch all products
-  - [x] get category
+  - [x] get categories
   - [ ] product info
   - [ ] fetch products in warehouse
   - [ ] add product
-  - [ ] update product
+  - [w] update product
+  - [w] update product permission denay handle
 */
 export const useApi = () => {
   const { token } = useAuth();
 
-  const getProducts = useCallback(async () => {
+  const getProducts = useCallback(async (): Promise<Product[]> => {
     if (!token) {
       throw new Error("No authentication token found");
     }
@@ -63,7 +66,35 @@ export const useApi = () => {
     }
   }, [token]);
 
-  const getCategories = useCallback(async () => {
+  const putProduct = useCallback(
+    async (newProduct: Product): Promise<Product> => {
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      try {
+        const response = await axios.put<Product>(
+          `${API_URL}/product/${newProduct.id}/`,
+          newProduct,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error(
+          "Error put product:",
+          error.response?.data || error.message,
+        );
+        throw error;
+      }
+    },
+    [token],
+  );
+
+  const getCategories = useCallback(async (): Promise<Category[]> => {
     if (!token) throw new Error("No authentication token found");
     try {
       const response = await axios.get<CategoryResponse>(
@@ -74,7 +105,6 @@ export const useApi = () => {
           },
         },
       );
-      console.log("getCategories:", response.data.results);
       return response.data.results;
     } catch (error: any) {
       console.error(
@@ -85,12 +115,13 @@ export const useApi = () => {
     }
   }, [token]);
 
-  const fetchProductInfo = async (productId: number) => {};
+  const getProductInfo = async (productId: number) => {};
   const addProduct = async (product: Product) => {};
   const updateProduct = async (product: Product) => {};
 
   return {
     getProducts,
+    putProduct,
     getCategories,
   };
 };
