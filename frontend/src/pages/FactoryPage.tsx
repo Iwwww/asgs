@@ -223,9 +223,6 @@ export default function FactoryPageTest() {
                           <TableHead className="hidden md:table-cell">
                             Вес
                           </TableHead>
-                          <TableHead className="hidden md:table-cell">
-                            Статус
-                          </TableHead>
                           <TableHead>
                             <span className="sr-only">Действия</span>
                           </TableHead>
@@ -245,10 +242,6 @@ export default function FactoryPageTest() {
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
                               {product.weight}
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              {/* Assuming you have a status field or can derive it */}
-                              На складе
                             </TableCell>
                             <TableCell>
                               <DropdownMenu>
