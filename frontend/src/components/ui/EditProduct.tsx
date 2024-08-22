@@ -22,43 +22,64 @@ import { Textarea } from "@/components/ui/textarea";
 import { Category, Product, useApi } from "@/hooks/useApi";
 import { useCallback, useEffect, useState } from "react";
 import { Edit } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface EditProductProps {
   product: Product;
   categories: Category[];
+  onEditSuccess?: () => void;
 }
 
-export default function EditProduct({ product, categories }: EditProductProps) {
+export default function EditProduct({
+  product,
+  categories,
+  onEditSuccess,
+}: EditProductProps) {
   const [name, setName] = useState<string>(product.name);
   const [price, setPrice] = useState<number>(product.price);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [weight, setWeight] = useState<number>(product.weight);
   const [description, setDescription] = useState<string>(product.description);
   const { putProduct } = useApi();
+  const { toast } = useToast();
 
   useEffect(() => {
     const categoryId = product.category.split("/").filter(Boolean).pop();
     if (categoryId) {
       setSelectedCategory(categoryId);
     }
-    console.log("Category found:", categoryId);
+    console.log("Категория найдена:", categoryId);
   }, [product.category, categories]);
 
-  const handleSave = useCallback(async () => {
+  const handleEdit = useCallback(async () => {
     const newProduct: Product = {
       id: product.id,
       name: name,
       price: price,
-      category: `http://localhost:8000/product_category/${selectedCategory}/`, // Form correct category URL
+      category: `http://localhost:8000/product_category/${selectedCategory}/`, // Формирование корректного URL категории
       weight: weight,
       description: description,
     };
 
     try {
       const updatedProduct = await putProduct(newProduct);
-      console.log("Product updated successfully:", updatedProduct);
+      toast({
+        title: "Продукт обновлён",
+        description: "Информация о продукте успешно обновлена.",
+      });
+
+      if (onEditSuccess) {
+        onEditSuccess();
+      }
+
+      console.log("Продукт успешно обновлён:", updatedProduct);
     } catch (error) {
-      console.error("Error updating product:", error);
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при обновлении продукта.",
+        variant: "destructive",
+      });
+      console.error("Ошибка при обновлении продукта:", error);
     }
   }, [
     product.id,
@@ -68,6 +89,8 @@ export default function EditProduct({ product, categories }: EditProductProps) {
     weight,
     description,
     putProduct,
+    toast,
+    onEditSuccess,
   ]);
 
   return (
@@ -83,7 +106,7 @@ export default function EditProduct({ product, categories }: EditProductProps) {
           <SheetTitle>Изменение товара</SheetTitle>
           <SheetDescription>
             Внесите изменения в информацию о продукте. Когда закончите, нажмите
-            сохранить.
+            "Сохранить".
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
@@ -163,7 +186,7 @@ export default function EditProduct({ product, categories }: EditProductProps) {
         </div>
         <SheetFooter>
           <SheetClose asChild>
-            <Button type="submit" onClick={handleSave}>
+            <Button type="submit" onClick={handleEdit}>
               Сохранить изменения
             </Button>
           </SheetClose>

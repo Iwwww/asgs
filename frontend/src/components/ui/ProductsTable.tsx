@@ -91,7 +91,11 @@ export default function ProductsTable() {
               Export
             </span>
           </Button>
-          <AddProduct categories={categories} addProduct={postProduct} />
+          <AddProduct
+            categories={categories}
+            addProduct={postProduct}
+            onAddSuccess={onProductChange}
+          />
         </div>
       </div>
       <CardContent>
@@ -142,9 +146,13 @@ export default function ProductsTable() {
                         <div className="flex flex-col gap-1">
                           <EditProduct
                             product={product}
-                            categories={categories || categories}
+                            categories={categories}
+                            onEditSuccess={onProductChange}
                           />
-                          <DeleteProduct productId={product.id} />
+                          <DeleteProduct
+                            productId={product.id}
+                            onDeleteSuccess={onProductChange}
+                          />
                         </div>
                       </DropdownMenuContent>
                     </DropdownMenu>

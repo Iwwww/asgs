@@ -23,21 +23,25 @@ import { Category, Product, ProductWithoutId } from "@/hooks/useApi";
 import { useState, useCallback } from "react";
 import { PlusCircle } from "lucide-react";
 import { API_URL } from "@/api/constants";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AddProductProps {
   categories: Category[];
   addProduct: (newProduct: ProductWithoutId) => Promise<Product>;
+  onAddSuccess?: () => void;
 }
 
 export default function AddProduct({
   categories,
   addProduct,
+  onAddSuccess,
 }: AddProductProps) {
   const [name, setName] = useState("");
   const [price, setPrice] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [weight, setWeight] = useState(0);
   const [description, setDescription] = useState("");
+  const { toast } = useToast();
 
   const handleSave = useCallback(async () => {
     const newProduct: ProductWithoutId = {
@@ -50,15 +54,37 @@ export default function AddProduct({
 
     try {
       await addProduct(newProduct);
+      toast({
+        title: "Продукт добавлен",
+        description: "Новый продукт успешно добавлен.",
+      });
+
+      if (onAddSuccess) {
+        onAddSuccess();
+      }
     } catch (error) {
-      console.error("Error adding product:", error);
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при добавлении продукта.",
+        variant: "destructive",
+      });
+      console.error("Ошибка при добавлении продукта:", error);
     }
-  }, [name, price, selectedCategory, weight, description, addProduct]);
+  }, [
+    name,
+    price,
+    selectedCategory,
+    weight,
+    description,
+    addProduct,
+    toast,
+    onAddSuccess,
+  ]);
 
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button size="sm" className="h-8 gap-1">
+        <Button size="sm" className="gap-1">
           <PlusCircle className="h-3.5 w-3.5" />
           <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
             Добавить товар
@@ -70,7 +96,7 @@ export default function AddProduct({
           <SheetTitle>Добавление товара</SheetTitle>
           <SheetDescription>
             Заполните информацию о новом продукте. Когда закончите, нажмите
-            сохранить.
+            "Сохранить".
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
@@ -152,7 +178,7 @@ export default function AddProduct({
         <SheetFooter>
           <SheetClose asChild>
             <Button type="submit" onClick={handleSave}>
-              Сохранить изменения
+              Сохранить
             </Button>
           </SheetClose>
         </SheetFooter>

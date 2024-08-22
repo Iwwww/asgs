@@ -33,8 +33,8 @@ export default function DeleteProduct({
     try {
       await deleteProduct(productId);
       toast({
-        title: "Product deleted",
-        description: "The product was successfully deleted.",
+        title: "Продукт удалён",
+        description: "Продукт был успешно удалён.",
       });
 
       if (onDeleteSuccess) {
@@ -42,11 +42,11 @@ export default function DeleteProduct({
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "There was an error deleting the product.",
+        title: "Ошибка",
+        description: "Произошла ошибка при удалении продукта.",
         variant: "destructive",
       });
-      console.error("Error deleting product:", error);
+      console.error("Ошибка при удалении продукта:", error);
     }
   }, [productId, deleteProduct, onDeleteSuccess, toast]);
 
