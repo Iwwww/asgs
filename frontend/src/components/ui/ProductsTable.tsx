@@ -19,24 +19,25 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { File, MoreHorizontal } from "lucide-react";
 import EditProduct from "@/components/ui/EditProduct";
 import DeleteProduct from "@/components/ui/DeleteProduct";
 import { Product, Category, useApi } from "@/hooks/useApi";
+import AddProduct from "./AddProduct";
 
-interface ProductsTableProps {
-  categories?: Category[];
-}
-
-export default function ProductsTable({ categories }: ProductsTableProps) {
-  const { getProducts, getCategories } = useApi();
+export default function ProductsTable() {
+  const { getProducts, getCategories, postProduct } = useApi();
   const [products, setProducts] = useState<Product[]>([]);
-  const [fetchedCategories, setFetchedCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const onProductChange = async () => {
+    fetchProducts();
+    fetchCategories();
+  };
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -49,24 +50,22 @@ export default function ProductsTable({ categories }: ProductsTableProps) {
     }
   }, [getProducts]);
 
-  const fetchCategoriesIfNeeded = useCallback(async () => {
-    if (!categories) {
-      try {
-        const categoriesData = await getCategories();
-        setFetchedCategories(categoriesData);
-      } catch (error) {
-        console.error("Failed to fetch categories:", error);
-      }
+  const fetchCategories = useCallback(async () => {
+    try {
+      const categoriesData = await getCategories();
+      setCategories(categoriesData);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
     }
-  }, [categories, getCategories]);
+  }, [getCategories]);
 
   useEffect(() => {
     fetchProducts();
-    fetchCategoriesIfNeeded();
-  }, [fetchProducts, fetchCategoriesIfNeeded]);
+    fetchCategories();
+  }, [fetchProducts, fetchCategories]);
 
   const findCategoryName = (categoryUrl: string): string => {
-    const categoryList = categories || fetchedCategories; // Use provided categories or fetched ones
+    const categoryList = categories;
     const category = categoryList.find(
       (cat) => cat.id === extractIdFromUrl(categoryUrl),
     );
@@ -80,10 +79,21 @@ export default function ProductsTable({ categories }: ProductsTableProps) {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>Товары</CardTitle>
-        <CardDescription>Управление товарами</CardDescription>
-      </CardHeader>
+      <div className="flex items-center">
+        <CardHeader>
+          <CardTitle>Товары</CardTitle>
+          <CardDescription>Управление товарами</CardDescription>
+        </CardHeader>
+        <div className="ml-auto flex items-center gap-2 p-6">
+          <Button size="sm" variant="outline" className="gap-1">
+            <File className="h-3.5 w-3.5" />
+            <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
+              Export
+            </span>
+          </Button>
+          <AddProduct categories={categories} addProduct={postProduct} />
+        </div>
+      </div>
       <CardContent>
         {loading ? (
           <p>Loading...</p>
@@ -132,7 +142,7 @@ export default function ProductsTable({ categories }: ProductsTableProps) {
                         <div className="flex flex-col gap-1">
                           <EditProduct
                             product={product}
-                            categories={categories || fetchedCategories}
+                            categories={categories || categories}
                           />
                           <DeleteProduct productId={product.id} />
                         </div>

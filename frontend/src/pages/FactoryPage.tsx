@@ -25,22 +25,6 @@ import ProductsTable from "@/components/ui/ProductsTable";
 import DropdownAccauntMenu from "@/components/ui/DropdownAccauntMenu";
 
 export default function FactoryPageTest() {
-  const { getCategories, postProduct } = useApi();
-  const [categories, setCategories] = useState<Category[]>([]);
-
-  const fetchCategories = useCallback(async () => {
-    try {
-      const categoriesData = await getCategories();
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error("Failed to fetch categories:", error);
-    }
-  }, [getCategories]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <SideBar />
@@ -132,18 +116,9 @@ export default function FactoryPageTest() {
                 <TabsTrigger value="all">Все товары</TabsTrigger>
                 <TabsTrigger value="warehouse">На складе</TabsTrigger>
               </TabsList>
-              <div className="ml-auto flex items-center gap-2">
-                <Button size="sm" variant="outline" className="h-8 gap-1">
-                  <File className="h-3.5 w-3.5" />
-                  <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                    Export
-                  </span>
-                </Button>
-                <AddProduct categories={categories} addProduct={postProduct} />
-              </div>
             </div>
             <TabsContent value="all">
-              <ProductsTable categories={categories} />
+              <ProductsTable />
             </TabsContent>
             <TabsContent value="warehouse">
               <Card>
