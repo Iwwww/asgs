@@ -260,7 +260,7 @@ export default function FactoryPageTest() {
                                   <DropdownMenuLabel>
                                     Действия
                                   </DropdownMenuLabel>
-                                  <div className="flex flex-col">
+                                  <div className="flex flex-col gap-1">
                                     <EditProduct
                                       product={product}
                                       categories={categories}
