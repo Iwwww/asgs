@@ -22,7 +22,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { File, MoreHorizontal } from "lucide-react";
+import { File, MoreHorizontal, RefreshCw } from "lucide-react";
 import EditProduct from "@/components/ui/EditProduct";
 import DeleteProduct from "@/components/ui/DeleteProduct";
 import { Product, Category, useApi } from "@/hooks/useApi";
@@ -32,11 +32,17 @@ export default function ProductsTable() {
   const { getProducts, getCategories, postProduct } = useApi();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const onProductChange = async () => {
-    fetchProducts();
-    fetchCategories();
+  const fetchTableData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([fetchProducts(), fetchCategories()]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const fetchProducts = useCallback(async () => {
@@ -45,8 +51,6 @@ export default function ProductsTable() {
       setProducts(productsData);
     } catch (error) {
       console.error("Failed to fetch products:", error);
-    } finally {
-      setLoading(false);
     }
   }, [getProducts]);
 
@@ -60,8 +64,7 @@ export default function ProductsTable() {
   }, [getCategories]);
 
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
+    fetchTableData();
   }, [fetchProducts, fetchCategories]);
 
   const findCategoryName = (categoryUrl: string): string => {
@@ -94,12 +97,22 @@ export default function ProductsTable() {
           <AddProduct
             categories={categories}
             addProduct={postProduct}
-            onAddSuccess={onProductChange}
+            onAddSuccess={fetchTableData}
           />
+          <Button
+            onClick={fetchTableData}
+            disabled={isLoading}
+            size="sm"
+            aria-label="Reload data"
+          >
+            <RefreshCw
+              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+            />
+          </Button>
         </div>
       </div>
       <CardContent>
-        {loading ? (
+        {isLoading ? (
           <p>Loading...</p>
         ) : (
           <Table>
@@ -147,11 +160,11 @@ export default function ProductsTable() {
                           <EditProduct
                             product={product}
                             categories={categories}
-                            onEditSuccess={onProductChange}
+                            onEditSuccess={fetchTableData}
                           />
                           <DeleteProduct
                             productId={product.id}
-                            onDeleteSuccess={onProductChange}
+                            onDeleteSuccess={fetchTableData}
                           />
                         </div>
                       </DropdownMenuContent>
