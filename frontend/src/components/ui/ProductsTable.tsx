@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -18,27 +19,65 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
 import EditProduct from "@/components/ui/EditProduct";
 import DeleteProduct from "@/components/ui/DeleteProduct";
-import { Product, Category } from "@/hooks/useApi";
+import { Product, Category, useApi } from "@/hooks/useApi";
 
 interface ProductsTableProps {
-  products: Product[];
-  categories: Category[];
-  loading: boolean;
-  findCategoryName: (categoryUrl: string) => string;
+  categories?: Category[];
 }
 
-export default function ProductsTable({
-  products,
-  categories,
-  loading,
-  findCategoryName,
-}: ProductsTableProps) {
+export default function ProductsTable({ categories }: ProductsTableProps) {
+  const { getProducts, getCategories } = useApi();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [fetchedCategories, setFetchedCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchProducts = useCallback(async () => {
+    try {
+      const productsData = await getProducts();
+      setProducts(productsData);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [getProducts]);
+
+  const fetchCategoriesIfNeeded = useCallback(async () => {
+    if (!categories) {
+      try {
+        const categoriesData = await getCategories();
+        setFetchedCategories(categoriesData);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+      }
+    }
+  }, [categories, getCategories]);
+
+  useEffect(() => {
+    fetchProducts();
+    fetchCategoriesIfNeeded();
+  }, [fetchProducts, fetchCategoriesIfNeeded]);
+
+  const findCategoryName = (categoryUrl: string): string => {
+    const categoryList = categories || fetchedCategories; // Use provided categories or fetched ones
+    const category = categoryList.find(
+      (cat) => cat.id === extractIdFromUrl(categoryUrl),
+    );
+    return category ? category.name : "Unknown Category";
+  };
+
+  const extractIdFromUrl = (url: string): number => {
+    const parts = url.split("/");
+    return parseInt(parts[parts.length - 2], 10);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -93,7 +132,7 @@ export default function ProductsTable({
                         <div className="flex flex-col gap-1">
                           <EditProduct
                             product={product}
-                            categories={categories}
+                            categories={categories || fetchedCategories}
                           />
                           <DeleteProduct productId={product.id} />
                         </div>

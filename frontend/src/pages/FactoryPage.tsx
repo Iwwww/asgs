@@ -17,20 +17,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   Card,
-  CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import {
   User,
   Settings,
@@ -43,7 +33,6 @@ import {
   LogOut,
   File,
   PlusCircle,
-  MoreHorizontal,
   Search,
   PanelLeft,
 } from "lucide-react";
@@ -60,48 +49,26 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SideBar from "./SideBar";
-import { useApi, Product, Category } from "@/hooks/useApi";
-import EditProduct from "@/components/ui/EditProduct";
+import { useApi, Category } from "@/hooks/useApi";
 import AddProduct from "@/components/ui/AddProduct";
-import DeleteProduct from "@/components/ui/DeleteProduct";
 import ProductsTable from "@/components/ui/ProductsTable";
 
 export default function FactoryPageTest() {
-  const { getProducts, getCategories, postProduct } = useApi();
-  const [products, setProducts] = useState<Product[]>([]);
+  const { getCategories, postProduct } = useApi();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  const fetchProductsAndCategories = useCallback(async () => {
+  const fetchCategories = useCallback(async () => {
     try {
-      const [productsData, categoriesData] = await Promise.all([
-        getProducts(),
-        getCategories(),
-      ]);
-      setProducts(productsData);
+      const categoriesData = await getCategories();
       setCategories(categoriesData);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
-    } finally {
-      setLoading(false);
+      console.error("Failed to fetch categories:", error);
     }
-  }, [getProducts, getCategories]);
+  }, [getCategories]);
 
   useEffect(() => {
-    fetchProductsAndCategories();
-  }, [fetchProductsAndCategories]);
-
-  const findCategoryName = (categoryUrl: string): string => {
-    const category = categories.find(
-      (cat) => cat.id === extractIdFromUrl(categoryUrl),
-    );
-    return category ? category.name : "Unknown Category";
-  };
-
-  const extractIdFromUrl = (url: string): number => {
-    const parts = url.split("/");
-    return parseInt(parts[parts.length - 2], 10);
-  };
+    fetchCategories();
+  }, [fetchCategories]);
 
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
@@ -203,12 +170,7 @@ export default function FactoryPageTest() {
               </div>
             </div>
             <TabsContent value="all">
-              <ProductsTable
-                products={products}
-                categories={categories}
-                loading={loading}
-                findCategoryName={findCategoryName}
-              />
+              <ProductsTable categories={categories} />
             </TabsContent>
             <TabsContent value="warehouse">
               <Card>
