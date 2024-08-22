@@ -19,6 +19,7 @@ import ProductsTable from "@/components/ui/ProductsTable";
 import DropdownAccauntMenu from "@/components/ui/DropdownAccauntMenu";
 import SideBar from "@/components/ui/SideBar";
 import HamburgerMenu from "@/components/ui/HamburgerMenu";
+import CategoriesTable from "@/components/ui/CategoriesTable";
 
 export default function FactoryPageTest() {
   return (
@@ -64,6 +65,7 @@ export default function FactoryPageTest() {
               <TabsList>
                 <TabsTrigger value="all">Все товары</TabsTrigger>
                 <TabsTrigger value="warehouse">На складе</TabsTrigger>
+                <TabsTrigger value="categories">Категории</TabsTrigger>
               </TabsList>
             </div>
             <TabsContent value="all">
@@ -76,6 +78,9 @@ export default function FactoryPageTest() {
                   <CardDescription>Управление товарами</CardDescription>
                 </CardHeader>
               </Card>
+            </TabsContent>
+            <TabsContent value="categories">
+              <CategoriesTable />
             </TabsContent>
           </Tabs>
         </main>

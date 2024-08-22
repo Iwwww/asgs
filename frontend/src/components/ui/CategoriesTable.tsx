@@ -23,63 +23,32 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { File, MoreHorizontal, RefreshCw } from "lucide-react";
-import EditProduct from "@/components/ui/EditProduct";
-import DeleteProduct from "@/components/ui/DeleteProduct";
-import { Product, Category, useApi } from "@/hooks/useApi";
-import AddProduct from "./AddProduct";
+import EditCategory from "@/components/ui/EditCategory";
+import DeleteCategory from "@/components/ui/DeleteCategory";
+import { Category, useApi } from "@/hooks/useApi";
+import AddCategory from "./AddCategory";
 import { Skeleton } from "./skeleton";
 
-export default function ProductsTable() {
-  const { getProducts, getCategories, postProduct } = useApi();
-  const [products, setProducts] = useState<Product[]>([]);
+export default function CategoriesTable() {
+  const { getCategories, postCategory } = useApi();
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchTableData = async () => {
-    setIsLoading(true);
-    try {
-      await Promise.all([fetchProducts(), fetchCategories()]);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const fetchProducts = useCallback(async () => {
-    try {
-      const productsData = await getProducts();
-      setProducts(productsData);
-    } catch (error) {
-      console.error("Failed to fetch products:", error);
-    }
-  }, [getProducts]);
-
   const fetchCategories = useCallback(async () => {
+    setIsLoading(true);
     try {
       const categoriesData = await getCategories();
       setCategories(categoriesData);
     } catch (error) {
       console.error("Failed to fetch categories:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [getCategories]);
 
   useEffect(() => {
-    fetchTableData();
-  }, [fetchProducts, fetchCategories]);
-
-  const findCategoryName = (categoryUrl: string): string => {
-    const categoryList = categories;
-    const category = categoryList.find(
-      (cat) => cat.id === extractIdFromUrl(categoryUrl),
-    );
-    return category ? category.name : "Unknown Category";
-  };
-
-  const extractIdFromUrl = (url: string): number => {
-    const parts = url.split("/");
-    return parseInt(parts[parts.length - 2], 10);
-  };
+    fetchCategories();
+  }, [fetchCategories]);
 
   const TableSkeleton = () => (
     <Table>
@@ -89,13 +58,7 @@ export default function ProductsTable() {
             <Skeleton className="h-6 w-[120px]" />
           </TableHead>
           <TableHead className="hidden py-4 md:table-cell">
-            <Skeleton className="h-6 w-[100px]" />
-          </TableHead>
-          <TableHead className="hidden py-4 md:table-cell">
-            <Skeleton className="h-6 w-[80px]" />
-          </TableHead>
-          <TableHead className="hidden py-4 md:table-cell">
-            <Skeleton className="h-6 w-[80px]" />
+            <Skeleton className="h-6 w-[200px]" />
           </TableHead>
         </TableRow>
       </TableHeader>
@@ -106,13 +69,7 @@ export default function ProductsTable() {
               <Skeleton className="h-6 w-[180px]" />
             </TableCell>
             <TableCell className="hidden py-4 md:table-cell">
-              <Skeleton className="h-6 w-[120px]" />
-            </TableCell>
-            <TableCell className="hidden py-4 md:table-cell">
-              <Skeleton className="h-6 w-[100px]" />
-            </TableCell>
-            <TableCell className="hidden py-4 md:table-cell">
-              <Skeleton className="h-6 w-[80px]" />
+              <Skeleton className="h-6 w-[200px]" />
             </TableCell>
             <TableCell className="py-4">
               <Skeleton className="h-6 w-10 md:table-cell" />
@@ -127,8 +84,8 @@ export default function ProductsTable() {
     <Card>
       <div className="flex items-center">
         <CardHeader>
-          <CardTitle>Товары</CardTitle>
-          <CardDescription>Управление товарами</CardDescription>
+          <CardTitle>Категории</CardTitle>
+          <CardDescription>Управление категориями</CardDescription>
         </CardHeader>
         <div className="ml-auto flex items-center gap-2 p-6">
           <Button size="sm" variant="outline" className="gap-1">
@@ -137,13 +94,12 @@ export default function ProductsTable() {
               Export
             </span>
           </Button>
-          <AddProduct
-            categories={categories}
-            addProduct={postProduct}
-            onAddSuccess={fetchTableData}
+          <AddCategory
+            addCategory={postCategory}
+            onAddSuccess={fetchCategories}
           />
           <Button
-            onClick={fetchTableData}
+            onClick={fetchCategories}
             disabled={isLoading}
             size="sm"
             aria-label="Reload data"
@@ -162,28 +118,18 @@ export default function ProductsTable() {
             <TableHeader>
               <TableRow>
                 <TableHead>Наименование</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Категория
-                </TableHead>
-                <TableHead className="hidden md:table-cell">Цена</TableHead>
-                <TableHead className="hidden md:table-cell">Вес</TableHead>
+                <TableHead className="hidden md:table-cell">Описание</TableHead>
                 <TableHead>
                   <span className="sr-only">Действия</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product: Product, index: number) => (
+              {categories.map((category: Category, index: number) => (
                 <TableRow key={index}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
+                  <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {findCategoryName(product.category)}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    ₽{product.price}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {product.weight}
+                    {category.description}
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -200,14 +146,13 @@ export default function ProductsTable() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Действия</DropdownMenuLabel>
                         <div className="flex flex-col gap-1">
-                          <EditProduct
-                            product={product}
-                            categories={categories}
-                            onEditSuccess={fetchTableData}
+                          <EditCategory
+                            category={category}
+                            onEditSuccess={fetchCategories}
                           />
-                          <DeleteProduct
-                            productId={product.id}
-                            onDeleteSuccess={fetchTableData}
+                          <DeleteCategory
+                            categoryId={category.id}
+                            onDeleteSuccess={fetchCategories}
                           />
                         </div>
                       </DropdownMenuContent>
@@ -221,7 +166,7 @@ export default function ProductsTable() {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Показано товаров: <strong>{products.length}</strong>
+          Показано категорий: <strong>{categories.length}</strong>
         </div>
       </CardFooter>
     </Card>

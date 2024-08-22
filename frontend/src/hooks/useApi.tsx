@@ -22,10 +22,12 @@ interface ProductResponse {
   results: Product[];
 }
 
-export interface Category {
-  id: number;
+export interface CategoryWithoutId {
   name: string;
   description: string;
+}
+export interface Category extends CategoryWithoutId {
+  id: number;
 }
 
 interface CategoryResponse {
@@ -40,17 +42,15 @@ interface CategoryResponse {
   - [x] get categories
   - [ ] product info
   - [ ] fetch products in warehouse
-  - [ ] add product
+  - [x] add product
   - [x] update product
-  - [w] update product permission denay handle
+  - [?] update product permission denay handle
 */
 export const useApi = () => {
   const { token } = useAuth();
 
   const getProducts = useCallback(async (): Promise<Product[]> => {
-    if (!token) {
-      throw new Error("No authentication token found");
-    }
+    if (!token) throw new Error("No authentication token found");
 
     try {
       const response = await axios.get<ProductResponse>(`${API_URL}/product/`, {
@@ -70,9 +70,7 @@ export const useApi = () => {
 
   const putProduct = useCallback(
     async (newProduct: Product): Promise<Product> => {
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
+      if (!token) throw new Error("No authentication token found");
 
       try {
         const response = await axios.put<Product>(
@@ -98,9 +96,7 @@ export const useApi = () => {
 
   const postProduct = useCallback(
     async (newProduct: ProductWithoutId): Promise<Product> => {
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
+      if (!token) throw new Error("No authentication token found");
 
       try {
         const response = await axios.post<Product>(
@@ -126,9 +122,7 @@ export const useApi = () => {
 
   const deleteProduct = useCallback(
     async (productId: number): Promise<Product> => {
-      if (!token) {
-        throw new Error("No authentication token found");
-      }
+      if (!token) throw new Error("No authentication token found");
 
       try {
         const response = await axios.delete<Product>(
@@ -172,7 +166,79 @@ export const useApi = () => {
     }
   }, [token]);
 
-  const getProduct = async (productId: number) => {};
+  const postCategory = useCallback(
+    async (newCategory: CategoryWithoutId): Promise<Category> => {
+      if (!token) throw new Error("No authentication token found");
+
+      try {
+        const response = await axios.post<Category>(
+          `${API_URL}/product_category/`,
+          newCategory,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error(
+          "Error posting category:",
+          error.response?.data || error.message,
+        );
+        throw error;
+      }
+    },
+    [token],
+  );
+
+  const putCategory = useCallback(
+    async (updatedCategory: Category): Promise<Category> => {
+      if (!token) throw new Error("No authentication token found");
+      try {
+        const response = await axios.put<Category>(
+          `${API_URL}/product_category/${updatedCategory.id}/`,
+          updatedCategory,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+            },
+          },
+        );
+        return response.data;
+      } catch (error: any) {
+        console.error(
+          "Error putting category:",
+          error.response?.data || error.message,
+        );
+        throw error;
+      }
+    },
+    [token],
+  );
+
+  const deleteCategory = useCallback(
+    async (categoryId: number): Promise<void> => {
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
+      try {
+        await axios.delete<void>(`${API_URL}/product_category/${categoryId}/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+      } catch (error: any) {
+        console.error(
+          "Error deleting category:",
+          error.response?.data || error.message,
+        );
+        throw error;
+      }
+    },
+    [token],
+  );
 
   return {
     getProducts,
@@ -180,5 +246,8 @@ export const useApi = () => {
     postProduct,
     deleteProduct,
     getCategories,
+    postCategory,
+    putCategory,
+    deleteCategory,
   };
 };
