@@ -33,8 +33,8 @@ export default function DeleteProduct({
     try {
       await deleteProduct(productId);
       toast({
-        title: "Продукт удалён",
-        description: "Продукт был успешно удалён.",
+        title: "Товар удалён",
+        description: "Товар был успешно удалён.",
       });
 
       if (onDeleteSuccess) {
@@ -43,10 +43,10 @@ export default function DeleteProduct({
     } catch (error) {
       toast({
         title: "Ошибка",
-        description: "Произошла ошибка при удалении продукта.",
+        description: "Произошла ошибка при удалении товара.",
         variant: "destructive",
       });
-      console.error("Ошибка при удалении продукта:", error);
+      console.error("Ошибка при удалении товара:", error);
     }
   }, [productId, deleteProduct, onDeleteSuccess, toast]);
 
@@ -61,7 +61,7 @@ export default function DeleteProduct({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>
-            Вы уверены, что хотите удалить этот продукт?
+            Вы уверены, что хотите удалить этот товар?
           </AlertDialogTitle>
           <AlertDialogDescription>
             Это действие невозможно отменить. В результате товар будет

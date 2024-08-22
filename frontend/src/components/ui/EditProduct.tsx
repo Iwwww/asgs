@@ -64,22 +64,22 @@ export default function EditProduct({
     try {
       const updatedProduct = await putProduct(newProduct);
       toast({
-        title: "Продукт обновлён",
-        description: "Информация о продукте успешно обновлена.",
+        title: "Товар обновлён",
+        description: "Информация о товаре успешно обновлена.",
       });
 
       if (onEditSuccess) {
         onEditSuccess();
       }
 
-      console.log("Продукт успешно обновлён:", updatedProduct);
+      console.log("Товар успешно обновлён:", updatedProduct);
     } catch (error) {
       toast({
         title: "Ошибка",
-        description: "Произошла ошибка при обновлении продукта.",
+        description: "Произошла ошибка при обновлении товара.",
         variant: "destructive",
       });
-      console.error("Ошибка при обновлении продукта:", error);
+      console.error("Ошибка при обновлении товара:", error);
     }
   }, [
     product.id,
@@ -105,7 +105,7 @@ export default function EditProduct({
         <SheetHeader>
           <SheetTitle>Изменение товара</SheetTitle>
           <SheetDescription>
-            Внесите изменения в информацию о продукте. Когда закончите, нажмите
+            Внесите изменения в информацию о товаре. Когда закончите, нажмите
             "Сохранить".
           </SheetDescription>
         </SheetHeader>

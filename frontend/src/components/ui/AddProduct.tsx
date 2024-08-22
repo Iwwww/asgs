@@ -55,8 +55,8 @@ export default function AddProduct({
     try {
       await addProduct(newProduct);
       toast({
-        title: "Продукт добавлен",
-        description: "Новый продукт успешно добавлен.",
+        title: "Товар добавлен",
+        description: "Новый товар успешно добавлен.",
       });
 
       if (onAddSuccess) {
@@ -65,10 +65,10 @@ export default function AddProduct({
     } catch (error) {
       toast({
         title: "Ошибка",
-        description: "Произошла ошибка при добавлении продукта.",
+        description: "Произошла ошибка при добавлении товара.",
         variant: "destructive",
       });
-      console.error("Ошибка при добавлении продукта:", error);
+      console.error("Ошибка при добавлении товара:", error);
     }
   }, [
     name,
@@ -95,7 +95,7 @@ export default function AddProduct({
         <SheetHeader>
           <SheetTitle>Добавление товара</SheetTitle>
           <SheetDescription>
-            Заполните информацию о новом продукте. Когда закончите, нажмите
+            Заполните информацию о новом товаре. Когда закончите, нажмите
             "Сохранить".
           </SheetDescription>
         </SheetHeader>
