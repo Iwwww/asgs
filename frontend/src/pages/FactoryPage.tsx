@@ -1,11 +1,10 @@
-import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { File, Search, PanelLeft } from "lucide-react";
+import { Search } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,15 +13,12 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import SideBar from "./SideBar";
-import { useApi, Category } from "@/hooks/useApi";
-import AddProduct from "@/components/ui/AddProduct";
 import ProductsTable from "@/components/ui/ProductsTable";
 import DropdownAccauntMenu from "@/components/ui/DropdownAccauntMenu";
+import SideBar from "@/components/ui/SideBar";
+import HamburgerMenu from "@/components/ui/HamburgerMenu";
 
 export default function FactoryPageTest() {
   return (
@@ -30,54 +26,7 @@ export default function FactoryPageTest() {
       <SideBar />
       <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button size="icon" variant="outline" className="sm:hidden">
-                <PanelLeft className="h-5 w-5" />
-                <span className="sr-only">Toggle Menu</span>
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="sm:max-w-xs">
-              <nav className="grid gap-6 text-lg font-medium">
-                <a
-                  href="#"
-                  className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-                >
-                  <span className="sr-only">Acme Inc</span>
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  Dashboard
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  Orders
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-foreground"
-                >
-                  Products
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  Customers
-                </a>
-                <a
-                  href="#"
-                  className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-                >
-                  Settings
-                </a>
-              </nav>
-            </SheetContent>
-          </Sheet>
+          <HamburgerMenu />
           <Breadcrumb className="hidden md:flex">
             <BreadcrumbList>
               <BreadcrumbItem>
