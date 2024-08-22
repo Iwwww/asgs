@@ -27,6 +27,7 @@ import EditProduct from "@/components/ui/EditProduct";
 import DeleteProduct from "@/components/ui/DeleteProduct";
 import { Product, Category, useApi } from "@/hooks/useApi";
 import AddProduct from "./AddProduct";
+import { Skeleton } from "./skeleton";
 
 export default function ProductsTable() {
   const { getProducts, getCategories, postProduct } = useApi();
@@ -80,6 +81,48 @@ export default function ProductsTable() {
     return parseInt(parts[parts.length - 2], 10);
   };
 
+  const TableSkeleton = () => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="py-4">
+            <Skeleton className="h-6 w-[120px]" />
+          </TableHead>
+          <TableHead className="hidden py-4 md:table-cell">
+            <Skeleton className="h-6 w-[100px]" />
+          </TableHead>
+          <TableHead className="hidden py-4 md:table-cell">
+            <Skeleton className="h-6 w-[80px]" />
+          </TableHead>
+          <TableHead className="hidden py-4 md:table-cell">
+            <Skeleton className="h-6 w-[80px]" />
+          </TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {[...Array(5)].map((_, index) => (
+          <TableRow key={index} className="border-b border-gray-200">
+            <TableCell className="py-4">
+              <Skeleton className="h-6 w-[180px]" />
+            </TableCell>
+            <TableCell className="hidden py-4 md:table-cell">
+              <Skeleton className="h-6 w-[120px]" />
+            </TableCell>
+            <TableCell className="hidden py-4 md:table-cell">
+              <Skeleton className="h-6 w-[100px]" />
+            </TableCell>
+            <TableCell className="hidden py-4 md:table-cell">
+              <Skeleton className="h-6 w-[80px]" />
+            </TableCell>
+            <TableCell className="py-4">
+              <Skeleton className="h-6 w-10 md:table-cell" />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+
   return (
     <Card>
       <div className="flex items-center">
@@ -113,7 +156,7 @@ export default function ProductsTable() {
       </div>
       <CardContent>
         {isLoading ? (
-          <p>Loading...</p>
+          <TableSkeleton />
         ) : (
           <Table>
             <TableHeader>
