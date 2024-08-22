@@ -1,41 +1,11 @@
 import { useEffect, useState, useCallback } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuPortal,
-  DropdownMenuSubContent,
-} from "@/components/ui/dropdown-menu";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  User,
-  Settings,
-  Keyboard,
-  Users,
-  Mail,
-  MessageSquare,
-  LifeBuoy,
-  Cloud,
-  LogOut,
-  File,
-  PlusCircle,
-  Search,
-  PanelLeft,
-} from "lucide-react";
+import { File, Search, PanelLeft } from "lucide-react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -52,6 +22,7 @@ import SideBar from "./SideBar";
 import { useApi, Category } from "@/hooks/useApi";
 import AddProduct from "@/components/ui/AddProduct";
 import ProductsTable from "@/components/ui/ProductsTable";
+import DropdownAccauntMenu from "@/components/ui/DropdownAccauntMenu";
 
 export default function FactoryPageTest() {
   const { getCategories, postProduct } = useApi();
@@ -150,7 +121,9 @@ export default function FactoryPageTest() {
               className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
             />
           </div>
-          <div className="ml-auto flex gap-2">{DropdownAccauntMenu()}</div>
+          <div className="ml-auto flex gap-2">
+            <DropdownAccauntMenu />
+          </div>
         </header>
         <main className="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
           <Tabs defaultValue="all">
@@ -184,90 +157,5 @@ export default function FactoryPageTest() {
         </main>
       </div>
     </div>
-  );
-}
-
-export function DropdownAccauntMenu() {
-  const { logout, user } = useAuth();
-  const navigate = useNavigate();
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline">{user?.username}</Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>Мой профиль</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuItem disabled>
-            <User className="mr-2 h-4 w-4" />
-            <span>Профиль</span>
-            <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            <Settings className="mr-2 h-4 w-4" />
-            <span>Настройки</span>
-            <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
-          </DropdownMenuItem>
-          <DropdownMenuItem disabled>
-            <Keyboard className="mr-2 h-4 w-4" />
-            <span>Сочетаня клавишь</span>
-            <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuGroup>
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger>
-              <Users className="mr-2 h-4 w-4" />
-              <span>Команда</span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuPortal>
-              <DropdownMenuSubContent>
-                <DropdownMenuItem disabled>
-                  <Mail className="mr-2 h-4 w-4" />
-                  <span>Электронная почта</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                  <MessageSquare className="mr-2 h-4 w-4" />
-                  <span>Сообщение</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  <span>Ещё...</span>
-                </DropdownMenuItem>
-              </DropdownMenuSubContent>
-            </DropdownMenuPortal>
-          </DropdownMenuSub>
-        </DropdownMenuGroup>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <LifeBuoy className="mr-2 h-4 w-4" />
-          <span>
-            <a href="mailto:support@asgs.ru">Поддержка</a>
-          </span>
-        </DropdownMenuItem>
-        <DropdownMenuItem disabled>
-          <Cloud className="mr-2 h-4 w-4" />
-          <span>API</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>
-          <LogOut className="mr-2 h-4 w-4" />
-          <span>
-            <button
-              onClick={() => {
-                logout();
-                navigate("/login");
-              }}
-            >
-              Выйти
-            </button>
-          </span>
-          <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
   );
 }
