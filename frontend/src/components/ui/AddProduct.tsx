@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Category, Product, ProductWithoutId } from "@/hooks/useApi";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { PlusCircle } from "lucide-react";
 import { API_URL } from "@/api/constants";
 import { useToast } from "@/components/ui/use-toast";
@@ -42,6 +42,15 @@ export default function AddProduct({
   const [weight, setWeight] = useState(0);
   const [description, setDescription] = useState("");
   const { toast } = useToast();
+
+  const isFormValid = useMemo(() => {
+    return (
+      name.trim() !== "" &&
+      price > 0 &&
+      selectedCategory.trim() !== "" &&
+      weight > 0
+    );
+  }, [name, price, selectedCategory, weight]);
 
   const handleSave = useCallback(async () => {
     const newProduct: ProductWithoutId = {
@@ -96,7 +105,7 @@ export default function AddProduct({
           <SheetTitle>Добавление товара</SheetTitle>
           <SheetDescription>
             Заполните информацию о новом товаре. Когда закончите, нажмите
-            "Сохранить".
+            "Добавить".
           </SheetDescription>
         </SheetHeader>
         <div className="grid gap-4 py-4">
@@ -177,8 +186,8 @@ export default function AddProduct({
         </div>
         <SheetFooter>
           <SheetClose asChild>
-            <Button type="submit" onClick={handleSave}>
-              Сохранить
+            <Button type="submit" onClick={handleSave} disabled={!isFormValid}>
+              Добавить
             </Button>
           </SheetClose>
         </SheetFooter>

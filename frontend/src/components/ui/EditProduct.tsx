@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Category, Product, useApi } from "@/hooks/useApi";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Edit } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -50,6 +50,15 @@ export default function EditProduct({
     }
     console.log("Категория найдена:", categoryId);
   }, [product.category, categories]);
+
+  const isFormValid = useMemo(() => {
+    return (
+      name.trim() !== "" &&
+      price > 0 &&
+      selectedCategory.trim() !== "" &&
+      weight > 0
+    );
+  }, [name, price, selectedCategory, weight]);
 
   const handleEdit = useCallback(async () => {
     const newProduct: Product = {
@@ -186,7 +195,7 @@ export default function EditProduct({
         </div>
         <SheetFooter>
           <SheetClose asChild>
-            <Button type="submit" onClick={handleEdit}>
+            <Button type="submit" onClick={handleEdit} disabled={!isFormValid}>
               Сохранить изменения
             </Button>
           </SheetClose>
