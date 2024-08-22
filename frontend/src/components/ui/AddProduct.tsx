@@ -19,14 +19,14 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Category, Product, useApi } from "@/hooks/useApi";
+import { Category, Product, ProductWithoutId } from "@/hooks/useApi";
 import { useState, useCallback } from "react";
 import { PlusCircle } from "lucide-react";
 import { API_URL } from "@/api/constants";
 
 interface AddProductProps {
   categories: Category[];
-  addProduct: (newProduct: Product) => Promise<Product>;
+  addProduct: (newProduct: ProductWithoutId) => Promise<Product>;
 }
 
 export default function AddProduct({
@@ -40,16 +40,16 @@ export default function AddProduct({
   const [description, setDescription] = useState("");
 
   const handleSave = useCallback(async () => {
-    const newProduct = {
+    const newProduct: ProductWithoutId = {
       name: name,
       price: price,
-      category: `${API_URL}/product_category/${selectedCategory}/`, // Form correct category URL
+      category: `${API_URL}/product_category/${selectedCategory}/`,
       weight: weight,
       description: description,
     };
 
     try {
-      const createdProduct = await addProduct(newProduct);
+      await addProduct(newProduct);
     } catch (error) {
       console.error("Error adding product:", error);
     }

@@ -3,13 +3,16 @@ import { useAuth } from "./useAuth";
 import { useCallback } from "react";
 import { API_URL } from "@/api/constants";
 
-export interface Product {
-  id: number;
+export interface ProductWithoutId {
   name: string;
   price: number;
   category: string;
   weight: number;
   description: string;
+}
+
+export interface Product extends ProductWithoutId {
+  id: number;
 }
 
 interface ProductResponse {
@@ -94,7 +97,7 @@ export const useApi = () => {
   );
 
   const postProduct = useCallback(
-    async (newProduct: Product): Promise<Product> => {
+    async (newProduct: ProductWithoutId): Promise<Product> => {
       if (!token) {
         throw new Error("No authentication token found");
       }
@@ -169,8 +172,7 @@ export const useApi = () => {
     }
   }, [token]);
 
-  const getProductInfo = async (productId: number) => {};
-  const updateProduct = async (product: Product) => {};
+  const getProduct = async (productId: number) => {};
 
   return {
     getProducts,
