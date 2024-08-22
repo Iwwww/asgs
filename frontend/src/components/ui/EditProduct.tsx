@@ -21,6 +21,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Category, Product, useApi } from "@/hooks/useApi";
 import { useCallback, useEffect, useState } from "react";
+import { Edit } from "lucide-react";
 
 interface EditProductProps {
   product: Product;
@@ -72,7 +73,10 @@ export default function EditProduct({ product, categories }: EditProductProps) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="ghost">Изменить</Button>
+        <Button variant="ghost" className="flex items-center gap-2 h-8">
+          <Edit className="h-4 w-4" />
+          Изменить
+        </Button>
       </SheetTrigger>
       <SheetContent className="min-w-[500px]">
         <SheetHeader>
