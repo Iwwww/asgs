@@ -108,7 +108,12 @@ export const useApi = () => {
   const postProduct = useCallback(
     withTokenValidation(
       async (newProduct: ProductWithoutId): Promise<Product> => {
-        return await apiCall<Product>("post", PRODUCT_URL, newProduct);
+        const response = await apiCall<Product>(
+          "post",
+          PRODUCT_URL,
+          newProduct,
+        );
+        return response;
       },
       token,
     ),
@@ -117,18 +122,23 @@ export const useApi = () => {
 
   const putProduct = useCallback(
     withTokenValidation(async (updatedProduct: Product): Promise<Product> => {
-      return await apiCall<Product>(
+      const response = await apiCall<Product>(
         "put",
         `${PRODUCT_URL}${updatedProduct.id}/`,
         updatedProduct,
       );
+      return response;
     }, token),
     [token],
   );
 
   const deleteProduct = useCallback(
     withTokenValidation(async (productId: number): Promise<void> => {
-      await apiCall<void>("delete", `${PRODUCT_URL}${productId}/`);
+      const response = await apiCall<void>(
+        "delete",
+        `${PRODUCT_URL}${productId}/`,
+      );
+      return response;
     }, token),
     [token],
   );
@@ -147,11 +157,12 @@ export const useApi = () => {
   const postCategory = useCallback(
     withTokenValidation(
       async (newCategory: CategoryWithoutId): Promise<Category> => {
-        return await apiCall<Category>(
+        const response = await apiCall<Category>(
           "post",
           PRODUCT_CATEGORY_URL,
           newCategory,
         );
+        return response;
       },
       token,
     ),
@@ -161,11 +172,12 @@ export const useApi = () => {
   const putCategory = useCallback(
     withTokenValidation(
       async (updatedCategory: Category): Promise<Category> => {
-        return await apiCall<Category>(
+        const response = await apiCall<Category>(
           "put",
           `${PRODUCT_CATEGORY_URL}${updatedCategory.id}/`,
           updatedCategory,
         );
+        return response;
       },
       token,
     ),
@@ -174,7 +186,11 @@ export const useApi = () => {
 
   const deleteCategory = useCallback(
     withTokenValidation(async (categoryId: number): Promise<void> => {
-      await apiCall<void>("delete", `${PRODUCT_CATEGORY_URL}${categoryId}/`);
+      const response = await apiCall<void>(
+        "delete",
+        `${PRODUCT_CATEGORY_URL}${categoryId}/`,
+      );
+      return response;
     }, token),
     [token],
   );
@@ -184,6 +200,48 @@ export const useApi = () => {
       const response = await apiCall<ProductCount[]>(
         "get",
         `${FACTORY_WAREHOUSE_URL + PRODUCT_COUNTS_URL}`,
+      );
+      return response;
+    }, token),
+    [token],
+  );
+
+  const postWarehouseProductCount = useCallback(
+    withTokenValidation(
+      async (newProductCount: ProductCount): Promise<ProductCount> => {
+        const response = await apiCall<ProductCount>(
+          "post",
+          `${FACTORY_WAREHOUSE_URL + PRODUCT_COUNTS_URL}`,
+          newProductCount,
+        );
+        return response;
+      },
+      token,
+    ),
+    [token],
+  );
+
+  const putWarehouseProductCount = useCallback(
+    withTokenValidation(
+      async (newProductCount: ProductCount): Promise<ProductCount> => {
+        const response = await apiCall<ProductCount>(
+          "put",
+          `${FACTORY_WAREHOUSE_URL + PRODUCT_COUNTS_URL}`,
+          newProductCount,
+        );
+        return response;
+      },
+      token,
+    ),
+    [token],
+  );
+
+  const deleteWarehouseProductCount = useCallback(
+    withTokenValidation(async (productId: number): Promise<ProductCount> => {
+      const response = await apiCall<ProductCount>(
+        "delete",
+        `${FACTORY_WAREHOUSE_URL + PRODUCT_COUNTS_URL}`,
+        productId,
       );
       return response;
     }, token),
@@ -200,5 +258,8 @@ export const useApi = () => {
     putCategory,
     deleteCategory,
     getWarehouseProductCounts,
+    postWarehouseProductCount,
+    putWarehouseProductCount,
+    deleteWarehouseProductCount,
   };
 };
