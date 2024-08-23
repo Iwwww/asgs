@@ -111,6 +111,10 @@ class WarehouseProductCountSerializer(serializers.ModelSerializer):
 
         instance.amount = validated_data.get("amount", instance.amount)
         instance.save()
+
+        if instance.amount == 0:
+            instance.delete()
+
         return instance
 
 
