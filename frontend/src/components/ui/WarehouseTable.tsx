@@ -203,56 +203,60 @@ export default function WarehouseTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product: Product, index: number) => (
-                <TableRow key={index}>
-                  <TableCell className="font-medium">{product.name}</TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {findCategoryName(product.category)}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    ₽{product.price}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {product.weight}
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell">
-                    {(() => {
-                      const productCount = productCounts.find(
-                        (element) => element.product_id === product.id,
-                      );
-                      return productCount ? productCount.amount : "N/A";
-                    })()}
-                  </TableCell>
-                  <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          aria-haspopup="true"
-                          size="icon"
-                          variant="ghost"
-                        >
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">Toggle menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Действия</DropdownMenuLabel>
-                        <div className="flex flex-col gap-1">
-                          <EditProduct
-                            product={product}
-                            categories={categories}
-                            onEditSuccess={fetchTableData}
-                          />
-                          <DeleteProduct
-                            productId={product.id}
-                            onDeleteSuccess={fetchTableData}
-                          />
-                        </div>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {products.map((product: Product, index: number) => {
+                const productCount = productCounts.find(
+                  (element) => element.product_id === product.id,
+                );
+                return !productCount ? (
+                  ""
+                ) : (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">
+                      {product.name}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {findCategoryName(product.category)}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      ₽{product.price}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {product.weight}
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">
+                      {productCount.amount}
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            aria-haspopup="true"
+                            size="icon"
+                            variant="ghost"
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Toggle menu</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Действия</DropdownMenuLabel>
+                          <div className="flex flex-col gap-1">
+                            <EditProduct
+                              product={product}
+                              categories={categories}
+                              onEditSuccess={fetchTableData}
+                            />
+                            <DeleteProduct
+                              productId={product.id}
+                              onDeleteSuccess={fetchTableData}
+                            />
+                          </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         )}
