@@ -38,8 +38,15 @@ interface CategoryResponse {
   results: Category[];
 }
 
+export interface ProductCount {
+  product_id: number;
+  amount: number;
+}
+
 const PRODUCT_URL = `${API_URL}/product/`;
-const CATEGORY_URL = `${API_URL}/product_category/`;
+const PRODUCT_CATEGORY_URL = `${API_URL}/product_category/`;
+const FACTORY_WAREHOUSE_URL = `${API_URL}/factory_warehouse/`;
+const PRODUCT_COUNTS_URL = `product_counts/`;
 
 const getAuthHeaders = (token: string) => ({
   headers: {
@@ -127,7 +134,10 @@ export const useApi = () => {
 
   const getCategories = useCallback(
     withTokenValidation(async (): Promise<Category[]> => {
-      const response = await apiCall<CategoryResponse>("get", CATEGORY_URL);
+      const response = await apiCall<CategoryResponse>(
+        "get",
+        PRODUCT_CATEGORY_URL,
+      );
       return response.results;
     }, token),
     [token],
@@ -136,7 +146,11 @@ export const useApi = () => {
   const postCategory = useCallback(
     withTokenValidation(
       async (newCategory: CategoryWithoutId): Promise<Category> => {
-        return await apiCall<Category>("post", CATEGORY_URL, newCategory);
+        return await apiCall<Category>(
+          "post",
+          PRODUCT_CATEGORY_URL,
+          newCategory,
+        );
       },
       token,
     ),
@@ -148,7 +162,7 @@ export const useApi = () => {
       async (updatedCategory: Category): Promise<Category> => {
         return await apiCall<Category>(
           "put",
-          `${CATEGORY_URL}${updatedCategory.id}/`,
+          `${PRODUCT_CATEGORY_URL}${updatedCategory.id}/`,
           updatedCategory,
         );
       },
@@ -159,7 +173,18 @@ export const useApi = () => {
 
   const deleteCategory = useCallback(
     withTokenValidation(async (categoryId: number): Promise<void> => {
-      await apiCall<void>("delete", `${CATEGORY_URL}${categoryId}/`);
+      await apiCall<void>("delete", `${PRODUCT_CATEGORY_URL}${categoryId}/`);
+    }, token),
+    [token],
+  );
+
+  const getWarehouseProductCounts = useCallback(
+    withTokenValidation(async (): Promise<ProductCount[]> => {
+      const response = await apiCall<ProductCount[]>(
+        "get",
+        `${FACTORY_WAREHOUSE_URL + PRODUCT_COUNTS_URL}`,
+      );
+      return response;
     }, token),
     [token],
   );
@@ -173,5 +198,6 @@ export const useApi = () => {
     postCategory,
     putCategory,
     deleteCategory,
+    getWarehouseProductCounts,
   };
 };
