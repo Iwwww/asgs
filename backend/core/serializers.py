@@ -102,6 +102,17 @@ class WarehouseProductCountSerializer(serializers.ModelSerializer):
         model = FactoryWarehouse
         fields = ["product_id", "amount"]
 
+    def update(self, instance, validated_data):
+        # Handle the nested field manually
+        product_data = validated_data.pop("product", None)
+        if product_data:
+            product_id = product_data.get("id")
+            instance.product_id = product_id
+
+        instance.amount = validated_data.get("amount", instance.amount)
+        instance.save()
+        return instance
+
 
 class ProductOrderSerializer(serializers.ModelSerializer):
     class Meta:

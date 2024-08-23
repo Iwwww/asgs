@@ -1,5 +1,3 @@
-from rest_framework.authtoken.models import Token
-from rest_framework.authtoken.views import ObtainAuthToken
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from rest_framework import permissions, viewsets
@@ -8,6 +6,7 @@ from rest_framework.routers import Response
 
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
+from rest_framework import status
 
 from core.models import (
     ProductCategory,
@@ -195,15 +194,68 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
     serializer_class = FactoryWarehouseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    @action(detail=False, methods=["get"], permission_classes=[IsFactoryGroup])
+    @action(
+        detail=False,
+        methods=["get", "post", "put", "delete"],
+        permission_classes=[IsFactoryGroup],
+    )
     def product_counts(self, request):
         """
-        Custom endpoint to get product counts in warehouse.
+        Custom endpoint to get, create, update, or delete product counts in warehouse.
         Only accessible by users in the factory group.
         """
-        warehouse_products = FactoryWarehouse.objects.all()
-        serializer = WarehouseProductCountSerializer(warehouse_products, many=True)
-        return Response(serializer.data)
+        if request.method == "GET":
+            warehouse_products = FactoryWarehouse.objects.all()
+            serializer = WarehouseProductCountSerializer(warehouse_products, many=True)
+            return Response(serializer.data)
+
+        elif request.method == "POST":
+            serializer = WarehouseProductCountSerializer(data=request.data, many=True)
+            print("product_counts:data:", request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        elif request.method == "PUT":
+            data = request.data
+            if isinstance(data, dict):  # Handle single object update
+                data = [data]
+
+            for item in data:
+                try:
+                    instance = FactoryWarehouse.objects.get(
+                        product_id=item["product_id"]
+                    )
+                    serializer = WarehouseProductCountSerializer(
+                        instance, data=item, partial=True
+                    )
+                    if serializer.is_valid():
+                        serializer.save()
+                    else:
+                        return Response(
+                            serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                        )
+                except FactoryWarehouse.DoesNotExist:
+                    return Response(
+                        {"error": f'Product with ID {item["product_id"]} not found.'},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+            return Response({"detail": "Update successful"}, status=status.HTTP_200_OK)
+
+        elif request.method == "DELETE":
+            product_id = request.data.get("product_id")
+            try:
+                instance = FactoryWarehouse.objects.get(product_id=product_id)
+                instance.delete()
+                return Response(
+                    {"detail": "Delete successful"}, status=status.HTTP_204_NO_CONTENT
+                )
+            except FactoryWarehouse.DoesNotExist:
+                return Response(
+                    {"error": f"Product with ID {product_id} not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
 
 
 class ProductOrderViewSet(viewsets.ModelViewSet):
