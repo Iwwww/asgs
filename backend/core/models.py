@@ -47,6 +47,7 @@ class FactoryProducts(models.Model):
 
 class FactoryWarehouse(models.Model):
     factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
+    amount = models.IntegerField(default=0)
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
 
 

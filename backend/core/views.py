@@ -41,6 +41,7 @@ from core.serializers import (
     CarrierUserSerializer,
     DeliverySerializer,
     ProductOrderDeliverySerializer,
+    WarehouseProductCountSerializer,
 )
 
 from core.permissions import (
@@ -193,6 +194,16 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
     queryset = FactoryWarehouse.objects.all()
     serializer_class = FactoryWarehouseSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=False, methods=["get"], permission_classes=[IsFactoryGroup])
+    def product_counts(self, request):
+        """
+        Custom endpoint to get product counts in warehouse.
+        Only accessible by users in the factory group.
+        """
+        warehouse_products = FactoryWarehouse.objects.all()
+        serializer = WarehouseProductCountSerializer(warehouse_products, many=True)
+        return Response(serializer.data)
 
 
 class ProductOrderViewSet(viewsets.ModelViewSet):

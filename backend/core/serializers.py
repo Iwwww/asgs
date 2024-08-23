@@ -94,6 +94,15 @@ class FactoryWarehouseSerializer(serializers.ModelSerializer):
         fields = ["factory", "product"]
 
 
+class WarehouseProductCountSerializer(serializers.ModelSerializer):
+    product_id = serializers.IntegerField(source="product.id")
+    amount = serializers.IntegerField()
+
+    class Meta:
+        model = FactoryWarehouse
+        fields = ["product_id", "amount"]
+
+
 class ProductOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductOrder
