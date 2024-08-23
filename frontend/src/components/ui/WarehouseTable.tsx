@@ -241,9 +241,8 @@ export default function WarehouseTable() {
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Действия</DropdownMenuLabel>
                           <div className="flex flex-col gap-1">
-                            <EditProduct
-                              product={product}
-                              categories={categories}
+                            <EditWarehouseProductCount
+                              productCount={productCount}
                               onEditSuccess={fetchTableData}
                             />
                             <DeleteProduct
