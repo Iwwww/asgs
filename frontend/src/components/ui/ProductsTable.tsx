@@ -137,11 +137,7 @@ export default function ProductsTable() {
               Export
             </span>
           </Button>
-          <AddProduct
-            categories={categories}
-            addProduct={postProduct}
-            onAddSuccess={fetchTableData}
-          />
+          <AddProduct categories={categories} onAddSuccess={fetchTableData} />
           <Button
             onClick={fetchTableData}
             disabled={isLoading}

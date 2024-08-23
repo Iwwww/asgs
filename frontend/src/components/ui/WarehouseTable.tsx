@@ -26,12 +26,16 @@ import { File, MoreHorizontal, RefreshCw } from "lucide-react";
 import EditProduct from "@/components/ui/EditProduct";
 import DeleteProduct from "@/components/ui/DeleteProduct";
 import { Product, Category, ProductCount, useApi } from "@/hooks/useApi";
-import AddProduct from "./AddProduct";
 import { Skeleton } from "./skeleton";
+import AddProductToWarehouse from "./AddProductToWarehouse";
 
 export default function WarehouseTable() {
-  const { getProducts, getCategories, postProduct, getWarehouseProductCounts } =
-    useApi();
+  const {
+    getProducts,
+    getCategories,
+    getWarehouseProductCounts,
+    postWarehouseProductCount,
+  } = useApi();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [productCounts, setProductCounts] = useState<ProductCount[]>([]);
@@ -159,9 +163,10 @@ export default function WarehouseTable() {
               Export
             </span>
           </Button>
-          <AddProduct
+          <AddProductToWarehouse
+            products={products}
             categories={categories}
-            addProduct={postProduct}
+            addProductToWarehouse={postWarehouseProductCount}
             onAddSuccess={fetchTableData}
           />
           <Button

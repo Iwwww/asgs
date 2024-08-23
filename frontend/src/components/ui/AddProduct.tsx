@@ -19,7 +19,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Category, Product, ProductWithoutId } from "@/hooks/useApi";
+import { Category, ProductWithoutId, useApi } from "@/hooks/useApi";
 import { useState, useCallback, useMemo } from "react";
 import { PlusCircle } from "lucide-react";
 import { PRODUCT_CATEGORY_URL } from "@/api/constants";
@@ -27,13 +27,11 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface AddProductProps {
   categories: Category[];
-  addProduct: (newProduct: ProductWithoutId) => Promise<Product>;
   onAddSuccess?: () => void;
 }
 
 export default function AddProduct({
   categories,
-  addProduct,
   onAddSuccess,
 }: AddProductProps) {
   const [name, setName] = useState("");
@@ -41,6 +39,7 @@ export default function AddProduct({
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [weight, setWeight] = useState(0);
   const [description, setDescription] = useState("");
+  const { postProduct } = useApi();
   const { toast } = useToast();
 
   const isFormValid = useMemo(() => {
@@ -62,7 +61,7 @@ export default function AddProduct({
     };
 
     try {
-      await addProduct(newProduct);
+      await postProduct(newProduct);
       toast({
         title: "Товар добавлен",
         description: "Новый товар успешно добавлен.",
@@ -79,16 +78,7 @@ export default function AddProduct({
       });
       console.error("Ошибка при добавлении товара:", error);
     }
-  }, [
-    name,
-    price,
-    selectedCategory,
-    weight,
-    description,
-    addProduct,
-    toast,
-    onAddSuccess,
-  ]);
+  }, [name, price, selectedCategory, weight, description, toast, onAddSuccess]);
 
   return (
     <Sheet>
