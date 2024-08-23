@@ -22,7 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Category, Product, ProductWithoutId } from "@/hooks/useApi";
 import { useState, useCallback, useMemo } from "react";
 import { PlusCircle } from "lucide-react";
-import { API_URL } from "@/api/constants";
+import { PRODUCT_CATEGORY_URL } from "@/api/constants";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AddProductProps {
@@ -56,7 +56,7 @@ export default function AddProduct({
     const newProduct: ProductWithoutId = {
       name: name,
       price: price,
-      category: `${API_URL}/product_category/${selectedCategory}/`,
+      category: `${PRODUCT_CATEGORY_URL + selectedCategory}/`,
       weight: weight,
       description: description,
     };

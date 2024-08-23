@@ -23,6 +23,7 @@ import { Category, Product, useApi } from "@/hooks/useApi";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Edit } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { PRODUCT_CATEGORY_URL } from "@/api/constants";
 
 interface EditProductProps {
   product: Product;
@@ -65,7 +66,7 @@ export default function EditProduct({
       id: product.id,
       name: name,
       price: price,
-      category: `http://localhost:8000/product_category/${selectedCategory}/`, // Формирование корректного URL категории
+      category: `${PRODUCT_CATEGORY_URL + selectedCategory}/`,
       weight: weight,
       description: description,
     };

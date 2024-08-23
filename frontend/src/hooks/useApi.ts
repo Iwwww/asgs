@@ -1,7 +1,13 @@
 import axios from "axios";
 import { useAuth } from "./useAuth";
 import { useCallback } from "react";
-import { API_URL } from "@/api/constants";
+import {
+  API_URL,
+  FACTORY_WAREHOUSE_URL,
+  PRODUCT_CATEGORY_URL,
+  PRODUCT_COUNTS_URL,
+  PRODUCT_URL,
+} from "@/api/constants";
 
 export interface ProductWithoutId {
   name: string;
@@ -42,11 +48,6 @@ export interface ProductCount {
   product_id: number;
   amount: number;
 }
-
-const PRODUCT_URL = `${API_URL}/product/`;
-const PRODUCT_CATEGORY_URL = `${API_URL}/product_category/`;
-const FACTORY_WAREHOUSE_URL = `${API_URL}/factory_warehouse/`;
-const PRODUCT_COUNTS_URL = `product_counts/`;
 
 const getAuthHeaders = (token: string) => ({
   headers: {
