@@ -8,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.views import APIView
 from rest_framework import status
 
+from core import serializers
 from core.models import (
     FactoryUser,
     ProductCategory,
@@ -68,11 +69,11 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "register":
-            self.permission_classes = [AllowAny]
+            permission_classes = [AllowAny]
         elif self.action == "destroy":
-            self.permission_classes = [IsAuthenticated, IsSelf | IsAdminUser]
+            permission_classes = [IsAuthenticated, IsSelf | IsAdminUser]
         else:
-            self.permission_classes = [IsAuthenticated | IsAdminUser]
+            permission_classes = [IsAuthenticated | IsAdminUser]
         return super().get_permissions()
 
     @action(detail=False, methods=["post"])
@@ -118,7 +119,7 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "list" or self.action == "retrieve":
-            self.permission_classes = [
+            permission_classes = [
                 permissions.IsAuthenticated,
                 IsAuthenticated | IsFactoryGroup,
             ]
@@ -128,43 +129,23 @@ class ProductCategoryViewSet(viewsets.ModelViewSet):
             or self.action == "partial_update"
             or self.action == "destroy"
         ):
-            self.permission_classes = [
+            permission_classes = [
                 permissions.IsAuthenticated,
                 IsAdminUser | IsFactoryGroup,
             ]
         else:
-            self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+            permission_classes = [permissions.IsAuthenticated, IsAdminUser]
         return super().get_permissions()
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     """
-    API endpoint that allows product to be viewed or edited.
+    API endpoint that allows products to be viewed or edited.
     """
 
     queryset = Product.objects.all().order_by("name")
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_permissions(self):
-        if self.action == "list" or self.action == "retrieve":
-            self.permission_classes = [
-                permissions.IsAuthenticated,
-                IsAuthenticated | IsFactoryGroup | IsSalePointAdmin,
-            ]
-        elif (
-            self.action == "create"
-            or self.action == "update"
-            or self.action == "partial_update"
-            or self.action == "destroy"
-        ):
-            self.permission_classes = [
-                permissions.IsAuthenticated,
-                IsAdminUser | IsFactoryGroup,
-            ]
-        else:
-            self.permission_classes = [permissions.IsAuthenticated, IsAdminUser]
-        return super().get_permissions()
+    permission_classes = [permissions.IsAuthenticated, IsFactoryGroup]
 
 
 class FactoryViewSet(viewsets.ModelViewSet):
@@ -222,8 +203,9 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
 
         elif request.method == "POST":
-            serializer = WarehouseProductCountSerializer(data=request.data, many=True)
-            print("product_counts:data:", request.data)
+            serializer = WarehouseProductCountSerializer(
+                data=request.data, many=True, context={"request": request}
+            )
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -240,7 +222,7 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
                         product_id=item["product_id"]
                     )
                     serializer = WarehouseProductCountSerializer(
-                        instance, data=item, partial=True
+                        instance, data=item, partial=True, context={"request": request}
                     )
                     if serializer.is_valid():
                         serializer.save()
@@ -281,9 +263,9 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == "create":
-            self.permission_classes = [IsAuthenticated, IsSalePointAdmin]
+            permission_classes = [IsAuthenticated, IsSalePointAdmin]
         else:
-            self.permission_classes = [IsAuthenticated]
+            permission_classes = [IsAuthenticated]
         return super().get_permissions()
 
     def perform_create(self, serializer):

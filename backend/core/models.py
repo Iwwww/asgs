@@ -1,6 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.urls.resolvers import settings
+from django.conf import settings
 
 
 class ExtendedUser(AbstractUser):
@@ -8,14 +8,11 @@ class ExtendedUser(AbstractUser):
     phone_number = models.CharField(max_length=15, blank=True, null=True)
 
     def get_role(self):
-        role = ""
-        if self.groups.filter(name="factory").exists():
-            role = "factory"
-        if self.groups.filter(name="sale_point").exists():
-            role = "sale_point"
-        if self.groups.filter(name="carrier").exists():
-            role = "carrier"
-        return role
+        roles = ["factory", "sale_point", "carrier"]
+        for role in roles:
+            if self.groups.filter(name=role).exists():
+                return role
+        return ""
 
     def get_groups(self):
         return [group.name for group in self.groups.all()]

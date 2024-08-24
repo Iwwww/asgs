@@ -47,14 +47,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         return user
 
     def get_roles(self, obj):
-        roles = []
-        if obj.groups.filter(name="factory_admin").exists():
-            roles.append("factory_admin")
-        if obj.groups.filter(name="sale_point_admin").exists():
-            roles.append("sale_point_admin")
-        if obj.groups.filter(name="carrier_admin").exists():
-            roles.append("carrier_admin")
-        return roles
+        return [group.name for group in obj.groups.all()]
 
 
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
@@ -109,13 +102,39 @@ class WarehouseProductCountSerializer(serializers.ModelSerializer):
         model = FactoryWarehouse
         fields = ["product_id", "amount"]
 
+    def validate(self, data):
+        user = self.context["request"].user
+
+        try:
+            factory_user = FactoryUser.objects.get(user=user)
+            factory = factory_user.factory
+        except FactoryUser.DoesNotExist:
+            raise serializers.ValidationError(
+                {"detail": "User is not associated with any factory."}
+            )
+
+        product_id = data["product"]["id"]
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            raise serializers.ValidationError(
+                {"detail": f"Product with ID {product_id} does not exist."}
+            )
+
+        data["factory"] = factory
+        data["product"] = product
+
+        return data
+
+    def create(self, validated_data):
+        instance = FactoryWarehouse.objects.create(**validated_data)
+        return instance
+
     def update(self, instance, validated_data):
-        # Handle the nested field manually
         product_data = validated_data.pop("product", None)
         if product_data:
-            product_id = product_data.get("id")
+            product_id = product_data
             instance.product_id = product_id
-
         instance.amount = validated_data.get("amount", instance.amount)
         instance.save()
 
