@@ -14,7 +14,7 @@ import HamburgerMenu from "@/components/ui/HamburgerMenu";
 import CategoriesTable from "@/components/ui/CategoriesTable";
 import WarehouseTable from "@/components/ui/WarehouseTable";
 
-export default function FactoryPageTest() {
+export default function FactoryPage() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-muted/40">
       <SideBar />

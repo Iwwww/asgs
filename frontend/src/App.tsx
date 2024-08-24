@@ -7,11 +7,10 @@ import {
 } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import Dashboard from "./pages/Dashboard";
-import FactoryPage from "./pages/FactoryPage";
 import CarrierPage from "./pages/CarrierPage";
 import SalePointPage from "./pages/SalePointPage";
-import { useAuth } from "./hooks/useAuth";
-import FactoryPageTest from "./pages/FactoryPage.tsx";
+import { useAuth } from "./hooks/useAuth.ts";
+import FactoryPage from "./pages/FactoryPage.tsx";
 
 const App: React.FC = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -34,9 +33,7 @@ const App: React.FC = () => {
         />
         <Route
           path="/factory"
-          element={
-            isAuthenticated ? <FactoryPageTest /> : <Navigate to="/login" />
-          }
+          element={isAuthenticated ? <FactoryPage /> : <Navigate to="/login" />}
         />
         <Route
           path="/carrier"
