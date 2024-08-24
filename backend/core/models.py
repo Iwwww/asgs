@@ -1,5 +1,6 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.urls.resolvers import settings
 
 
 class ExtendedUser(AbstractUser):
@@ -49,6 +50,22 @@ class FactoryWarehouse(models.Model):
     factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
     amount = models.IntegerField(default=0)
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
+
+
+class FactoryUser(models.Model):
+    factory = models.ForeignKey(
+        Factory, on_delete=models.CASCADE, related_name="factory_users"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="factories"
+    )
+
+    def __str__(self):
+        # Correct way to access the username from the related User object
+        return f"{self.user.username} - {self.factory.name}"
+
+    class Meta:
+        unique_together = ("factory", "user")
 
 
 class ProductOrder(models.Model):

@@ -5,6 +5,7 @@ from rest_framework import serializers
 from core.models import (
     Factory,
     FactoryProducts,
+    FactoryUser,
     Product,
     ProductCategory,
     Factory,
@@ -80,6 +81,12 @@ class FactorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Factory
         fields = ["name", "address"]
+
+
+class FactoryUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FactoryUser
+        fields = "__all__"
 
 
 class FactoryProductsSerializer(serializers.ModelSerializer):

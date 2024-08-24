@@ -9,6 +9,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 
 from core.models import (
+    FactoryUser,
     ProductCategory,
     Product,
     Factory,
@@ -25,6 +26,7 @@ from core.models import (
 )
 
 from core.serializers import (
+    FactoryUserSerializer,
     GroupSerializer,
     ProductCategorySerializer,
     ProductSerializer,
@@ -173,6 +175,16 @@ class FactoryViewSet(viewsets.ModelViewSet):
     queryset = Factory.objects.all().order_by("name")
     serializer_class = FactorySerializer
     permission_classes = [permissions.IsAuthenticated]
+
+
+class FactoryUserViewSet(viewsets.ModelViewSet):
+    """
+    API endpoint that allows FactoryUsers to be viewed or edited.
+    """
+
+    queryset = FactoryUser.objects.all()
+    serializer_class = FactoryUserSerializer
+    permission_classes = [IsFactoryGroup]
 
 
 class FactoryProductsViewSet(viewsets.ModelViewSet):
