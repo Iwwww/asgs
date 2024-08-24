@@ -147,6 +147,21 @@ class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticated, IsFactoryGroup]
 
+    def perform_create(self, serializer):
+        product = serializer.save()
+
+        user = self.request.user
+
+        try:
+            factory_user = FactoryUser.objects.get(user=user)
+            factory = factory_user.factory
+
+            FactoryProducts.objects.create(factory=factory, product=product)
+
+        except FactoryUser.DoesNotExist:
+            raise serializers.ValidationError(
+                "User is not associated with any factory."
+            )
 
 class FactoryViewSet(viewsets.ModelViewSet):
     """
@@ -208,6 +223,8 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
             )
             if serializer.is_valid():
                 serializer.save()
+                # After saving, delete any rows with zero quantity
+                FactoryWarehouse.objects.filter(amount=0).delete()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
