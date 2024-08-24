@@ -29,7 +29,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = ExtendedUser
-        fields = ["url", "username", "password", "email", "groups", "roles"]
+        fields = ["id", "url", "username", "password", "email", "groups", "roles"]
         extra_kwargs = {"password": {"write_only": True}}
 
     def create(self, validated_data):
@@ -80,7 +80,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 class FactorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Factory
-        fields = ["name", "address"]
+        fields = ["id", "name", "address"]
 
 
 class FactoryUserSerializer(serializers.ModelSerializer):
