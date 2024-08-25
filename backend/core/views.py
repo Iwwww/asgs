@@ -1,3 +1,4 @@
+from itertools import product
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
 from rest_framework import permissions, viewsets
@@ -31,6 +32,7 @@ from core.serializers import (
     GroupSerializer,
     ProductCategorySerializer,
     ProductSerializer,
+    UniversalUserRegistrationSerializer,
     UserSerializer,
     FactorySerializer,
     FactoryProductsSerializer,
@@ -98,6 +100,12 @@ class UserInfoView(APIView):
         return Response(user_data)
 
 
+class UniversalUserRegistrationViewSet(viewsets.ModelViewSet):
+    queryset = ExtendedUser.objects.all()
+    serializer_class = UniversalUserRegistrationSerializer
+    permission_classes = [IsAdminUser]
+
+
 class GroupViewSet(viewsets.ModelViewSet):
     """
     API endpoint that allows groups to be viewed or edited.
@@ -162,6 +170,7 @@ class ProductViewSet(viewsets.ModelViewSet):
             raise serializers.ValidationError(
                 "User is not associated with any factory."
             )
+
 
 class FactoryViewSet(viewsets.ModelViewSet):
     """

@@ -15,6 +15,9 @@ router.register(r"factory", views.FactoryViewSet)
 router.register(r"factory_user", views.FactoryUserViewSet)
 router.register(r"factory_products", views.FactoryProductsViewSet)
 router.register(r"factory_warehouse", views.FactoryWarehouseViewSet)
+router.register(
+    r"register-user", views.UniversalUserRegistrationViewSet, basename="register-user"
+)
 router.register(r"product_order", views.ProductOrderViewSet)
 router.register(r"sale_point", views.SalePointViewSet)
 router.register(r"sale_point_product_order", views.SalePointProductOrderViewSet)

@@ -50,6 +50,84 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
         return [group.name for group in obj.groups.all()]
 
 
+class UniversalUserRegistrationSerializer(serializers.ModelSerializer):
+    role = serializers.ChoiceField(
+        choices=[
+            ("factory", "Factory"),
+            ("carrier", "Carrier"),
+            ("sale_point", "Sale Point"),
+        ],
+        write_only=True,
+    )
+    factory_id = serializers.PrimaryKeyRelatedField(
+        queryset=Factory.objects.all(), write_only=True, required=False
+    )
+    carrier_id = serializers.PrimaryKeyRelatedField(
+        queryset=Carrier.objects.all(), write_only=True, required=False
+    )
+    sale_point_id = serializers.PrimaryKeyRelatedField(
+        queryset=SalePoint.objects.all(), write_only=True, required=False
+    )
+    username = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = ExtendedUser
+        fields = [
+            "username",
+            "email",
+            "password",
+            "role",
+            "factory_id",
+            "carrier_id",
+            "sale_point_id",
+        ]
+
+    def validate(self, attrs):
+        role = attrs.get("role")
+        if role == "factory" and not attrs.get("factory_id"):
+            raise serializers.ValidationError(
+                "Factory ID is required for role 'factory'."
+            )
+        if role == "carrier" and not attrs.get("carrier_id"):
+            raise serializers.ValidationError(
+                "Carrier ID is required for role 'carrier'."
+            )
+        if role == "sale_point" and not attrs.get("sale_point_id"):
+            raise serializers.ValidationError(
+                "Sale Point ID is required for role 'sale_point'."
+            )
+        return attrs
+
+    def create(self, validated_data):
+        role = validated_data.pop("role")
+        factory = validated_data.pop("factory_id", None)
+        carrier = validated_data.pop("carrier_id", None)
+        sale_point = validated_data.pop("sale_point_id", None)
+
+        user = ExtendedUser.objects.create_user(
+            username=validated_data["username"],
+            email=validated_data["email"],
+            password=validated_data["password"],
+        )
+
+        if role == "factory":
+            group = Group.objects.get(name="factory")
+            user.groups.add(group)
+            FactoryUser.objects.create(user=user, factory=factory)
+        elif role == "carrier":
+            group = Group.objects.get(name="carrier")
+            user.groups.add(group)
+            CarrierUser.objects.create(user=user, carrier=carrier)
+        elif role == "sale_point":
+            group = Group.objects.get(name="sale_point")
+            user.groups.add(group)
+            SalePointUser.objects.create(user=user, sale_point=sale_point)
+
+        return user
+
+
 class GroupSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Group
