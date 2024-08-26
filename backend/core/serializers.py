@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from core.models import (
@@ -173,6 +174,36 @@ class ProductOrderSerializer(serializers.ModelSerializer):
                 )
 
         return data
+
+
+class CreateOrderSerializer(serializers.Serializer):
+    product_id = serializers.IntegerField()
+    amount = serializers.IntegerField()
+
+    def validate(self, data):
+        product = Product.objects.get(id=data["product_id"])
+        if not product:
+            raise serializers.ValidationError("Product does not exist.")
+
+        sale_point = self.context["request"].user.sale_points.first()
+        if not sale_point:
+            raise serializers.ValidationError(
+                "User is not associated with any sale point."
+            )
+
+        data["product"] = product
+        data["sale_point"] = sale_point
+
+        return data
+
+    def create(self, validated_data):
+        product = validated_data["product"]
+        amount = validated_data["amount"]
+        sale_point = validated_data["sale_point"]
+
+        order = sale_point.create_order(product, amount)
+
+        return order
 
 
 class SalePointSerializer(serializers.ModelSerializer):

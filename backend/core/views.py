@@ -4,7 +4,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.views import APIView
+from rest_framework.views import APIView, status
 
 from core.models import (
     Factory,
@@ -18,6 +18,7 @@ from core.models import (
 )
 
 from core.serializers import (
+    CreateOrderSerializer,
     GroupSerializer,
     ProductCategorySerializer,
     ProductSerializer,
@@ -258,6 +259,24 @@ class SalePointViewSet(viewsets.ModelViewSet):
     queryset = SalePoint.objects.all().order_by("name")
     serializer_class = SalePointSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    @action(detail=True, methods=["post"], serializer_class=CreateOrderSerializer)
+    def create_order(self, request, pk=None):
+        sale_point = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            order = serializer.save()
+        except ValidationError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except ValueError as e:
+            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {"order_id": order.id, "status": order.status},
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class CarrierViewSet(viewsets.ModelViewSet):

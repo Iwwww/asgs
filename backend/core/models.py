@@ -1,5 +1,8 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.exceptions import ValidationError
 from django.db import models
+from django.db.models.query import transaction
+from django.utils.timezone import datetime, timezone
 
 
 class ExtendedUser(AbstractUser):
@@ -80,7 +83,29 @@ class SalePoint(models.Model):
     address = models.CharField(max_length=255)
     product_orders = models.ManyToManyField(
         ProductOrder, related_name="sale_points", blank=True
-    )  # Replaces SalePointProductOrder
+    )
+
+    def create_order(self, product, amount):
+        with transaction.atomic():
+            factory_warehouse = FactoryWarehouse.objects.filter(product=product).first()
+            if not factory_warehouse or factory_warehouse.amount < amount:
+                raise ValidationError(
+                    "Insufficient product quantity in the factory warehouse."
+                )
+
+            order = ProductOrder.objects.create(
+                product=product,
+                amount=amount,
+                order_date=datetime.now(timezone.utc),
+                status="in_processing",
+            )
+
+            self.product_orders.add(order)
+
+            factory_warehouse.amount -= amount
+            factory_warehouse.save()
+
+            return order
 
 
 class Carrier(models.Model):
