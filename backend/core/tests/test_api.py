@@ -1,16 +1,18 @@
 from django.contrib.auth import get_user_model
 from rest_framework.test import APITestCase
 from django.urls import reverse
-from core.models import Carrier, Factory, SalePoint
+from core.models import (
+    Factory,
+    SalePoint,
+    Carrier,
+    Factory,
+    SalePoint,
+)
 
 
 class UserRegistrationAPITest(APITestCase):
 
     def setUp(self):
-        # Group.objects.create(name='factory')
-        # Group.objects.create(name='carrier')
-        # Group.objects.create(name='sale_point')
-
         self.factory = Factory.objects.create(name="Factory 1")
         self.carrier = Carrier.objects.create(name="Carrier 1")
         self.sale_point = SalePoint.objects.create(name="Sale Point 1")
@@ -38,9 +40,6 @@ class UserRegistrationAPITest(APITestCase):
                     f"{role}_id": related_id,
                 }
                 response = self.client.post(url, data, format="json")
-
-                print("Response status code:", response.status_code)
-                print("Response data:", response.data)
 
                 self.assertEqual(response.status_code, 201)
                 self.assertEqual(response.data["username"], f"{role}_user")
