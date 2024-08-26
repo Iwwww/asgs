@@ -35,13 +35,15 @@ export default function EditWarehouseProductCount({
   }, [quantity]);
 
   const handleEdit = useCallback(async () => {
-    const updatedProductCount: ProductCount = {
-      product_id: productCount.product_id,
-      amount: quantity,
-    };
+    const newProductCounts: ProductCount[] = [
+      {
+        product: productCount.product,
+        amount: quantity,
+      },
+    ];
 
     try {
-      const result = await putWarehouseProductCount(updatedProductCount);
+      const result = await putWarehouseProductCount(newProductCounts);
       toast({
         title: "Количество обновлено",
         description: "Количество товара на складе успешно обновлено.",

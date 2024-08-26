@@ -45,7 +45,7 @@ interface CategoryResponse {
 }
 
 export interface ProductCount {
-  product_id: number;
+  product: number;
   amount: number;
 }
 
@@ -208,11 +208,11 @@ export const useApi = () => {
 
   const postWarehouseProductCount = useCallback(
     withTokenValidation(
-      async (newProductCount: ProductCount): Promise<ProductCount> => {
-        const response = await apiCall<ProductCount>(
+      async (newProductCounts: ProductCount[]): Promise<ProductCount[]> => {
+        const response = await apiCall<ProductCount[]>(
           "post",
           `${FACTORY_WAREHOUSE_URL + PRODUCT_COUNTS_URL}`,
-          newProductCount,
+          newProductCounts,
         );
         return response;
       },
@@ -223,11 +223,11 @@ export const useApi = () => {
 
   const putWarehouseProductCount = useCallback(
     withTokenValidation(
-      async (newProductCount: ProductCount): Promise<ProductCount> => {
+      async (newProductCounts: ProductCount[]): Promise<ProductCount> => {
         const response = await apiCall<ProductCount>(
           "put",
           `${FACTORY_WAREHOUSE_URL + PRODUCT_COUNTS_URL}`,
-          newProductCount,
+          newProductCounts,
         );
         return response;
       },

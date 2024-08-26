@@ -1,5 +1,7 @@
+from itertools import product
 from django.contrib.auth.models import Group
 from django.core.exceptions import ValidationError
+from django.db.models.query import transaction
 from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -139,75 +141,90 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
     serializer_class = FactoryWarehouseSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        user = self.request.user
-
-        if not user.factories.exists():
-            raise ValidationError("User is not associated with any factory.")
-
-        factory = user.factories.first()
-        serializer.save(factory=factory)
-
     @action(
         detail=False,
-        methods=["get", "post", "put", "delete"],
+        methods=["get", "post", "put"],
         permission_classes=[IsFactoryGroup],
     )
     def product_counts(self, request):
         if request.method == "GET":
-            warehouse_products = FactoryWarehouse.objects.all()
+            warehouse_products = self.get_queryset()
             serializer = self.get_serializer(warehouse_products, many=True)
             return Response(serializer.data)
 
         elif request.method == "POST":
-            serializer = self.get_serializer(
-                data=request.data, many=True, context={"request": request}
-            )
-            if serializer.is_valid():
-                serializer.save()
-                FactoryWarehouse.objects.filter(amount=0).delete()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return self._handle_post_request(request)
 
         elif request.method == "PUT":
-            data = request.data
-            if isinstance(data, dict):
-                data = [data]
+            return self._handle_put_request(request)
 
+    def _handle_post_request(self, request):
+        user = self.request.user
+        factory = user.factories.first()  # Получаем фабрику, связанную с пользователем
+
+        if not factory:
+            return Response(
+                {"error": "User is not associated with any factory."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = self.get_serializer(
+            data=request.data,
+            many=True,
+            context={"request": request, "factory": factory},
+        )
+        if serializer.is_valid():
+            with transaction.atomic():
+                serializer.save()
+                FactoryWarehouse.objects.filter(amount=0).delete()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def _handle_put_request(self, request):
+        user = self.request.user
+        factory = user.factories.first()  # Получаем фабрику, связанную с пользователем
+
+        if not factory:
+            return Response(
+                {"error": "User is not associated with any factory."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        data = request.data
+        if isinstance(data, dict):
+            data = list(data.values())
+
+        responses = []
+        with transaction.atomic():
             for item in data:
                 try:
                     instance = FactoryWarehouse.objects.get(
-                        product_id=item["product_id"]
+                        product_id=item["product"], factory=factory
                     )
                     serializer = self.get_serializer(
-                        instance, data=item, partial=True, context={"request": request}
+                        instance,
+                        data=item,
+                        partial=True,
+                        context={"request": request, "factory": factory},
                     )
                     if serializer.is_valid():
                         serializer.save()
+                        responses.append(
+                            {"product_id": instance.product.id, "status": "updated"}
+                        )
                     else:
                         return Response(
                             serializer.errors, status=status.HTTP_400_BAD_REQUEST
                         )
                 except FactoryWarehouse.DoesNotExist:
                     return Response(
-                        {"error": f'Product with ID {item["product_id"]} not found.'},
+                        {
+                            "error": f'Product with ID {item["product"]} not found in factory.'
+                        },
                         status=status.HTTP_404_NOT_FOUND,
                     )
-            return Response({"detail": "Update successful"}, status=status.HTTP_200_OK)
-
-        elif request.method == "DELETE":
-            product_id = request.data.get("product_id")
-            try:
-                instance = FactoryWarehouse.objects.get(product_id=product_id)
-                instance.delete()
-                return Response(
-                    {"detail": "Delete successful"}, status=status.HTTP_204_NO_CONTENT
-                )
-            except FactoryWarehouse.DoesNotExist:
-                return Response(
-                    {"error": f"Product with ID {product_id} not found."},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
+        FactoryWarehouse.objects.filter(amount=0).delete()
+        return Response(responses, status=status.HTTP_200_OK)
 
 
 class ProductOrderViewSet(viewsets.ModelViewSet):

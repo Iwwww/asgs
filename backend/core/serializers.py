@@ -1,3 +1,4 @@
+from itertools import product
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.password_validation import validate_password
@@ -151,9 +152,26 @@ class FactorySerializer(serializers.ModelSerializer):
 
 
 class FactoryWarehouseSerializer(serializers.ModelSerializer):
+    product = serializers.PrimaryKeyRelatedField(queryset=Product.objects.all())
+
     class Meta:
         model = FactoryWarehouse
-        fields = ["factory", "product", "amount"]
+        fields = ["product", "amount"]
+
+    def validate_amount(self, value):
+        if value < 0:
+            raise serializers.ValidationError("Amount cannot be negative.")
+        return value
+
+    def create(self, validated_data):
+        factory = self.context["factory"]  # Получаем фабрику из контекста
+        validated_data["factory"] = factory
+        return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        instance.amount = validated_data.get("amount", instance.amount)
+        instance.save()
+        return instance
 
 
 class ProductOrderSerializer(serializers.ModelSerializer):
