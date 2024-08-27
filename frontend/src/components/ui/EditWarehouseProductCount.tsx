@@ -31,7 +31,7 @@ export default function EditWarehouseProductCount({
   const { toast } = useToast();
 
   const isFormValid = useMemo(() => {
-    return quantity >= 0;
+    return [quantity >= 0 || quantity != productCount.amount];
   }, [quantity]);
 
   const handleEdit = useCallback(async () => {
@@ -63,7 +63,7 @@ export default function EditWarehouseProductCount({
       console.error("Ошибка при обновлении количества:", error);
     }
   }, [
-    productCount.product_id,
+    productCount.product,
     quantity,
     putWarehouseProductCount,
     toast,
