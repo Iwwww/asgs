@@ -23,11 +23,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { File, MoreHorizontal, RefreshCw } from "lucide-react";
-import EditProduct from "@/components/ui/EditProduct";
 import DeleteProduct from "@/components/ui/DeleteProduct";
 import { Product, Category, ProductCount, useApi } from "@/hooks/useApi";
 import { Skeleton } from "./skeleton";
 import AddProductToWarehouse from "./AddProductToWarehouse";
+import EditWarehouseProductCount from "./EditWarehouseProductCount";
 
 export default function WarehouseTable() {
   const {
