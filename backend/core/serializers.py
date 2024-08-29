@@ -140,9 +140,11 @@ class ProductCategorySerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
+    category_id = serializers.IntegerField(source="category.id")
+
     class Meta:
         model = Product
-        fields = ["id", "name", "price", "category", "weight", "description"]
+        fields = ["id", "name", "price", "category_id", "weight", "description"]
 
 
 class FactorySerializer(serializers.ModelSerializer):

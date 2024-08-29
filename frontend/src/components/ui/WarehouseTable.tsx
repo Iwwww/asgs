@@ -88,17 +88,10 @@ export default function WarehouseTable() {
     fetchTableData();
   }, [fetchProducts, fetchCategories, fetchProductCounts]);
 
-  const findCategoryName = (categoryUrl: string): string => {
+  const findCategoryName = (category_id: number): string => {
     const categoryList = categories;
-    const category = categoryList.find(
-      (cat) => cat.id === extractIdFromUrl(categoryUrl),
-    );
+    const category = categoryList.find((cat) => cat.id === category_id);
     return category ? category.name : "Unknown Category";
-  };
-
-  const extractIdFromUrl = (url: string): number => {
-    const parts = url.split("/");
-    return parseInt(parts[parts.length - 2], 10);
   };
 
   const TableSkeleton = () => (
@@ -215,7 +208,7 @@ export default function WarehouseTable() {
                       {product.name}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {findCategoryName(product.category)}
+                      {findCategoryName(product.category_id)}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
                       ₽{product.price}
