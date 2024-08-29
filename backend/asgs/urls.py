@@ -17,6 +17,11 @@ router.register(r"product_order", views.ProductOrderViewSet)
 router.register(r"sale_point", views.SalePointViewSet)
 router.register(r"carrier", views.CarrierViewSet)
 router.register(r"delivery", views.DeliveryViewSet)
+router.register(
+    r"products-with-quantity",
+    views.ProductsWithQuantityViewSet,
+    basename="products-with-quantity",
+)
 
 urlpatterns = [
     path("", include(router.urls)),

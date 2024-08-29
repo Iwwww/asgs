@@ -230,6 +230,12 @@ class SalePointSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "address", "product_orders"]
 
 
+class ProductsWithQuantitySerializer(serializers.Serializer):
+    product = ProductSerializer()
+    factory_id = serializers.IntegerField(source="factory.id")
+    amount = serializers.IntegerField()
+
+
 class CarrierSerializer(serializers.ModelSerializer):
     class Meta:
         model = Carrier

@@ -2,17 +2,18 @@ import axios from "axios";
 import { useAuth } from "./useAuth";
 import { useCallback } from "react";
 import {
-  API_URL,
   FACTORY_WAREHOUSE_URL,
+  PRODUCTS_WITH_QUANTITY_URL,
   PRODUCT_CATEGORY_URL,
   PRODUCT_COUNTS_URL,
   PRODUCT_URL,
+  SALEPOINT_AVAILABLE_PRODUCTS_URL,
 } from "@/api/constants";
 
 export interface ProductWithoutId {
   name: string;
   price: number;
-  category: string;
+  category_id: number;
   weight: number;
   description: string;
 }
@@ -46,6 +47,16 @@ interface CategoryResponse {
 
 export interface ProductCount {
   product: number;
+  amount: number;
+}
+
+export interface OrderProducts {
+  products_id: number[];
+}
+
+export interface ProductWithQuantity {
+  product: Product;
+  factory_id: number;
   amount: number;
 }
 
@@ -248,6 +259,17 @@ export const useApi = () => {
     [token],
   );
 
+  const getProductsWithQuantity = useCallback(
+    withTokenValidation(async (): Promise<ProductWithQuantity[]> => {
+      const response = await apiCall<ProductWithQuantity[]>(
+        "get",
+        `${PRODUCTS_WITH_QUANTITY_URL}`,
+      );
+      return response;
+    }, token),
+    [token],
+  );
+
   return {
     getProducts,
     postProduct,
@@ -261,5 +283,6 @@ export const useApi = () => {
     postWarehouseProductCount,
     putWarehouseProductCount,
     deleteWarehouseProductCount,
+    getProductsWithQuantity,
   };
 };

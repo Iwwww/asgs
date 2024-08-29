@@ -6,6 +6,7 @@ from rest_framework import permissions, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.schemas.coreapi import serializers
 from rest_framework.views import APIView, status
 
 from core.models import (
@@ -24,6 +25,7 @@ from core.serializers import (
     GroupSerializer,
     ProductCategorySerializer,
     ProductSerializer,
+    ProductsWithQuantitySerializer,
     UniversalUserRegistrationSerializer,
     UserSerializer,
     FactorySerializer,
@@ -294,6 +296,17 @@ class SalePointViewSet(viewsets.ModelViewSet):
             {"order_id": order.id, "status": order.status},
             status=status.HTTP_201_CREATED,
         )
+
+
+class ProductsWithQuantityViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = FactoryWarehouse.objects.all()
+    serializer_class = ProductsWithQuantitySerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class CarrierViewSet(viewsets.ModelViewSet):
