@@ -150,7 +150,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 class FactorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Factory
-        fields = ["id", "name", "address", "products"]
+        fields = ["id", "name", "address"]
 
 
 class FactoryWarehouseSerializer(serializers.ModelSerializer):

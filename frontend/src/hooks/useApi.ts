@@ -2,6 +2,7 @@ import axios from "axios";
 import { useAuth } from "./useAuth";
 import { useCallback } from "react";
 import {
+  FACTORIE_URL,
   FACTORY_WAREHOUSE_URL,
   PRODUCTS_WITH_QUANTITY_URL,
   PRODUCT_CATEGORY_URL,
@@ -58,6 +59,19 @@ export interface ProductWithQuantity {
   product: Product;
   factory_id: number;
   amount: number;
+}
+
+export interface Factory {
+  id: number;
+  name: string;
+  address: string;
+}
+
+interface FactoryResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Factory[];
 }
 
 const getAuthHeaders = (token: string) => ({
@@ -259,6 +273,17 @@ export const useApi = () => {
     [token],
   );
 
+  const getSalepointAvailableProducts = useCallback(
+    withTokenValidation(async (): Promise<ProductResponse[]> => {
+      const response = await apiCall<ProductResponse[]>(
+        "get",
+        `${SALEPOINT_AVAILABLE_PRODUCTS_URL}`,
+      );
+      return response;
+    }, token),
+    [token],
+  );
+
   const getProductsWithQuantity = useCallback(
     withTokenValidation(async (): Promise<ProductWithQuantity[]> => {
       const response = await apiCall<ProductWithQuantity[]>(
@@ -266,6 +291,17 @@ export const useApi = () => {
         `${PRODUCTS_WITH_QUANTITY_URL}`,
       );
       return response;
+    }, token),
+    [token],
+  );
+
+  const getFactories = useCallback(
+    withTokenValidation(async (): Promise<Factory[]> => {
+      const response: FactoryResponse = await apiCall<FactoryResponse>(
+        "get",
+        `${FACTORIE_URL}`,
+      );
+      return response.results;
     }, token),
     [token],
   );
@@ -283,6 +319,8 @@ export const useApi = () => {
     postWarehouseProductCount,
     putWarehouseProductCount,
     deleteWarehouseProductCount,
+    getSalepointAvailableProducts,
     getProductsWithQuantity,
+    getFactories,
   };
 };
