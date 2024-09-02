@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, ChangeEvent, useEffect } from "react";
+import { useState, ChangeEvent, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Minus, Plus } from "lucide-react";
@@ -19,6 +19,7 @@ export default function QuantitySelector({
   max = Number.MAX_VALUE,
 }: ComponentProps) {
   const [value, setValue] = useState<number>(defaultValue);
+  const inputRef = useRef<HTMLInputElement | null>(null);
 
   const increment = () => {
     const newValue = Math.min(max, value + 1);
@@ -67,7 +68,7 @@ export default function QuantitySelector({
   }, [min, max]);
 
   useEffect(() => {
-    const inputElement = document.getElementById("quantity-input");
+    const inputElement = inputRef.current;
     if (inputElement) {
       inputElement.addEventListener("wheel", handleWheel);
     }
@@ -102,7 +103,7 @@ export default function QuantitySelector({
         <Minus className="h-4 w-4" />
       </Button>
       <Input
-        id="quantity-input"
+        ref={inputRef}
         type="number"
         value={value}
         min={min}
