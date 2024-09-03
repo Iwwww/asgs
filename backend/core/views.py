@@ -235,7 +235,6 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
         .select_related("product")
         .prefetch_related("sale_points")
     )
-    serializer_class = ProductOrderSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
@@ -251,27 +250,44 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
             return ProductOrder.objects.filter(sale_points__in=user.sale_points.all())
         return ProductOrder.objects.none()
 
-    def perform_update(self, serializer):
-        if self.get_object().status not in ["in_processing"]:
-            raise ValidationError(
-                "Order cannot be modified after processing has started."
-            )
-        super().perform_update(serializer)
+    def get_serializer_class(self):
+        if self.action == "create":
+            return CreateOrderSerializer
+        return ProductOrderSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, many=True)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def perform_create(self, serializer):
-        product = serializer.validated_data["product"]
-        amount = serializer.validated_data["amount"]
+        orders_data = serializer.validated_data
 
-        factory_warehouse = FactoryWarehouse.objects.filter(product=product).first()
-        if factory_warehouse is None or factory_warehouse.amount < amount:
-            raise ValidationError(
-                "Insufficient product quantity in the factory warehouse."
+        orders = []
+        for order_data in orders_data:
+            product = order_data["product"]
+            quantity = order_data["quantity"]
+            sale_point = order_data["sale_point"]
+
+            factory_warehouse = FactoryWarehouse.objects.filter(product=product).first()
+            if factory_warehouse is None or factory_warehouse.amount < quantity:
+                raise ValidationError(
+                    f"Insufficient product quantity in the factory warehouse for product {product.name}."
+                )
+
+            order = ProductOrder.objects.create(
+                product=product, quantity=quantity, status="in_processing"
             )
+            order.sale_points.add(sale_point)
+            order.save()
 
-        order = serializer.save(status="in_processing")
-        sale_point = self.request.user.sale_points.first()
-        order.sale_points.add(sale_point)
-        order.save()
+            orders.append(order)
+
+        return orders
 
 
 class SalePointViewSet(viewsets.ModelViewSet):

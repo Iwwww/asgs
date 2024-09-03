@@ -68,14 +68,14 @@ class ProductOrder(models.Model):
     ]
 
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
-    order_date = models.DateTimeField()
     quantity = models.IntegerField()
+    order_date = models.DateTimeField(auto_now=True)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="in_processing"
     )
     deliveries = models.ManyToManyField(
         "Delivery", related_name="product_orders", blank=True
-    )  # Replaces ProductOrderDelivery
+    )
 
 
 class SalePoint(models.Model):
