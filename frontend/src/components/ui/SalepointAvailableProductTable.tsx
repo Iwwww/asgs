@@ -83,7 +83,7 @@ export default function SalepointAvailableProductTable() {
       .filter((item) => item.selectedValue > 0)
       .map((item) => ({
         ...item,
-        amount: item.selectedValue,
+        quantity: item.selectedValue,
       }));
   }, [state.productsWithQuantity]);
 
@@ -193,11 +193,11 @@ export default function SalepointAvailableProductTable() {
                     {productWithQuantity.product.weight}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
-                    {productWithQuantity.amount}
+                    {productWithQuantity.quantity}
                   </TableCell>
                   <TableCell className="hidden md:table-cell">
                     <QuantitySelector
-                      max={productWithQuantity.amount}
+                      max={productWithQuantity.quantity}
                       onValueChange={(newValue) =>
                         handleQuantityChange(
                           productWithQuantity.product.id,

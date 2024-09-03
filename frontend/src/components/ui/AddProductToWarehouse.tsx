@@ -60,7 +60,7 @@ export default function AddProductToWarehouse({
   const [openCategories, setOpenCategories] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [amount, setAmount] = useState(1);
+  const [quantity, setQuantity] = useState(1);
   const { toast } = useToast();
 
   const filteredProducts = useMemo(() => {
@@ -76,16 +76,18 @@ export default function AddProductToWarehouse({
   }, [products, selectedCategories]);
 
   const isFormValid = useMemo(() => {
-    return selectedProduct !== null && amount > 0;
-  }, [selectedProduct, amount]);
+    return selectedProduct !== null && quantity > 0;
+  }, [selectedProduct, quantity]);
 
   const handleSave = useCallback(async () => {
     if (selectedProduct === null) return;
 
     try {
-      await postProductToWarehouse([{ product: selectedProduct, amount }]);
+      await postProductToWarehouse([
+        { product: selectedProduct, quantity: quantity },
+      ]);
       console.log("selectedProduct:", selectedProduct);
-      console.log("amount:", amount);
+      console.log("quantity:", quantity);
       toast({
         title: "Товар добавлен на склад",
         description: "Товар успешно добавлен на склад.",
@@ -102,7 +104,7 @@ export default function AddProductToWarehouse({
       });
       console.error("Ошибка при добавлении товара на склад:", error);
     }
-  }, [selectedProduct, amount, postProductToWarehouse, toast, onAddSuccess]);
+  }, [selectedProduct, quantity, postProductToWarehouse, toast, onAddSuccess]);
 
   return (
     <Sheet>
@@ -266,12 +268,12 @@ export default function AddProductToWarehouse({
             </Popover>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="amount" className="text-right">
+            <Label htmlFor="quantity" className="text-right">
               Количество
             </Label>
             <QuantitySelector
               onValueChange={(e) => {
-                setAmount(e || 0);
+                setQuantity(e || 0);
                 console.log(e);
               }}
               min={1}

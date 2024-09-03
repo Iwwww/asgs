@@ -26,19 +26,19 @@ export default function EditWarehouseProductCount({
   productCount,
   onEditSuccess,
 }: EditWarehouseProductCountProps) {
-  const [quantity, setQuantity] = useState<number>(productCount.amount);
+  const [quantity, setQuantity] = useState<number>(productCount.quantity);
   const { putWarehouseProductCount } = useApi();
   const { toast } = useToast();
 
   const isFormValid = useMemo(() => {
-    return [quantity >= 0 || quantity != productCount.amount];
+    return [quantity >= 0 || quantity != productCount.quantity];
   }, [quantity]);
 
   const handleEdit = useCallback(async () => {
     const newProductCounts: ProductCount[] = [
       {
         product: productCount.product,
-        amount: quantity,
+        quantity: quantity,
       },
     ];
 
@@ -92,7 +92,7 @@ export default function EditWarehouseProductCount({
               Количество
             </Label>
             <QuantitySelector
-              defaultValue={productCount.amount}
+              defaultValue={productCount.quantity}
               min={0}
               onValueChange={(e) => setQuantity(e || 0)}
             />

@@ -56,7 +56,7 @@ class Factory(models.Model):
 
 class FactoryWarehouse(models.Model):
     factory = models.ForeignKey(Factory, on_delete=models.CASCADE)
-    amount = models.IntegerField(default=0)
+    quantity = models.IntegerField(default=0)
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
 
@@ -68,7 +68,7 @@ class ProductOrder(models.Model):
     ]
 
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
-    quantity = models.IntegerField()
+    quantity = models.PositiveIntegerField()
     order_date = models.DateTimeField(auto_now=True)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="in_processing"

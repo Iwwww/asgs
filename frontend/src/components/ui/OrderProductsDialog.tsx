@@ -48,7 +48,7 @@ export default function OrderProductsDialog({
   const totalProductsPrice: number = useMemo(() => {
     return productsWithQuantity.reduce(
       (sum: number, item: ProductWithQuantity) =>
-        sum + item.product.price * item.amount,
+        sum + item.product.price * item.quantity,
       0,
     );
   }, [productsWithQuantity]);
@@ -58,7 +58,7 @@ export default function OrderProductsDialog({
     const add = 500;
     return productsWithQuantity.reduce(
       (_, item: ProductWithQuantity) =>
-        magicNumber * (item.product.weight * item.amount) + add,
+        magicNumber * (item.product.weight * item.quantity) + add,
       0,
     );
   }, [productsWithQuantity]);
@@ -99,7 +99,7 @@ export default function OrderProductsDialog({
     const productsOrder: ProductOrder[] = productsWithQuantity.map(
       (item: ProductWithQuantity) => ({
         product_id: item.product.id,
-        quantity: item.amount,
+        quantity: item.quantity,
       }),
     );
     try {
@@ -178,7 +178,7 @@ export default function OrderProductsDialog({
                     <TableCell className="hidden py-4 sm:table-cell">
                       {item.product.weight} кг
                     </TableCell>
-                    <TableCell>{item.amount}</TableCell>
+                    <TableCell>{item.quantity}</TableCell>
                     <TableCell>{item.product.price} ₽</TableCell>
                   </TableRow>
                 ))}

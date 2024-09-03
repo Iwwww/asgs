@@ -217,7 +217,7 @@ export default function WarehouseTable() {
                       {product.weight}
                     </TableCell>
                     <TableCell className="hidden md:table-cell">
-                      {productCount.amount}
+                      {productCount.quantity}
                     </TableCell>
                     <TableCell>
                       <DropdownMenu>

@@ -158,11 +158,11 @@ class FactoryWarehouseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = FactoryWarehouse
-        fields = ["product", "amount"]
+        fields = ["product", "quantity"]
 
-    def validate_amount(self, value):
+    def validate_quantity(self, value):
         if value < 0:
-            raise serializers.ValidationError("Amount cannot be negative.")
+            raise serializers.ValidationError("Quantity cannot be negative.")
         return value
 
     def create(self, validated_data):
@@ -171,7 +171,7 @@ class FactoryWarehouseSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        instance.amount = validated_data.get("amount", instance.amount)
+        instance.quantity = validated_data.get("quantity", instance.quantity)
         instance.save()
         return instance
 
@@ -179,7 +179,7 @@ class FactoryWarehouseSerializer(serializers.ModelSerializer):
 class ProductOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductOrder
-        fields = ["id", "product", "amount", "order_date", "status"]
+        fields = ["id", "product", "quantity", "order_date", "status"]
 
     def validate(self, data):
         product = data.get("product")
@@ -188,7 +188,9 @@ class ProductOrderSerializer(serializers.ModelSerializer):
                 product=product, factory__in=product.factories.all()
             ).first()
 
-            if not factory_warehouse or factory_warehouse.amount < data.get("amount"):
+            if not factory_warehouse or factory_warehouse.quantity < data.get(
+                "quantity"
+            ):
                 raise serializers.ValidationError(
                     f"Insufficient product quantity in the factory warehouse."
                 )
@@ -235,7 +237,7 @@ class SalePointSerializer(serializers.ModelSerializer):
 class ProductsWithQuantitySerializer(serializers.Serializer):
     product = ProductSerializer()
     factory_id = serializers.IntegerField(source="factory.id")
-    amount = serializers.IntegerField()
+    quantity = serializers.IntegerField()
 
 
 class CarrierSerializer(serializers.ModelSerializer):

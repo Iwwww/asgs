@@ -178,7 +178,7 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             with transaction.atomic():
                 serializer.save()
-                FactoryWarehouse.objects.filter(amount=0).delete()
+                FactoryWarehouse.objects.filter(quantity=0).delete()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -225,7 +225,7 @@ class FactoryWarehouseViewSet(viewsets.ModelViewSet):
                         },
                         status=status.HTTP_404_NOT_FOUND,
                     )
-        FactoryWarehouse.objects.filter(amount=0).delete()
+        FactoryWarehouse.objects.filter(quantity=0).delete()
         return Response(responses, status=status.HTTP_200_OK)
 
 
@@ -274,7 +274,7 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
             sale_point = order_data["sale_point"]
 
             factory_warehouse = FactoryWarehouse.objects.filter(product=product).first()
-            if factory_warehouse is None or factory_warehouse.amount < quantity:
+            if factory_warehouse is None or factory_warehouse.quantity < quantity:
                 raise ValidationError(
                     f"Insufficient product quantity in the factory warehouse for product {product.name}."
                 )
