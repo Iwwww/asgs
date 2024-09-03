@@ -16,33 +16,34 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { SeparatorHorizontal, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { DialogDescription } from "@radix-ui/react-dialog";
 import {
   Category,
-  CategoryWithoutId,
   Factory,
-  OrderProducts,
-  Product,
   ProductWithQuantity,
+  ProductOrder,
   useApi,
 } from "@/hooks/useApi";
-import { Separator } from "@radix-ui/react-dropdown-menu";
+import { useToast } from "./use-toast";
 
 interface OrderProductsDialogProps {
   productsWithQuantity: ProductWithQuantity[];
   onOrderProductsSuccess?: () => void;
+  disabled?: boolean;
 }
 
 export default function OrderProductsDialog({
   productsWithQuantity,
   onOrderProductsSuccess,
+  disabled = false,
 }: OrderProductsDialogProps) {
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [factories, setFactories] = useState<Factory[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const { getCategories, getFactories } = useApi();
+  const { getCategories, getFactories, postOrderProducts } = useApi();
 
   const totalProductsPrice: number = useMemo(() => {
     return productsWithQuantity.reduce(
@@ -50,16 +51,17 @@ export default function OrderProductsDialog({
         sum + item.product.price * item.amount,
       0,
     );
-  }, []);
+  }, [productsWithQuantity]);
 
   const deliveryCost: number = useMemo(() => {
     const magicNumber = 0.2;
+    const add = 500;
     return productsWithQuantity.reduce(
       (_, item: ProductWithQuantity) =>
-        magicNumber * (item.product.weight * item.amount) + 500,
+        magicNumber * (item.product.weight * item.amount) + add,
       0,
     );
-  }, []);
+  }, [productsWithQuantity]);
 
   const totalPrice = useMemo(() => {
     return totalProductsPrice + deliveryCost;
@@ -93,6 +95,32 @@ export default function OrderProductsDialog({
     return category ? category.name : "Неизвестно";
   };
 
+  const handleSumbit = useCallback(async () => {
+    const productsOrder: ProductOrder[] = productsWithQuantity.map(
+      (item: ProductWithQuantity) => ({
+        product_id: item.product.id,
+        quantity: item.amount,
+      }),
+    );
+    try {
+      await postOrderProducts(productsOrder);
+      toast({
+        title: "Заказ создан",
+        description: "Заказ успешно создан.",
+      });
+
+      if (onOrderProductsSuccess) {
+        onOrderProductsSuccess();
+      }
+    } catch (error) {
+      toast({
+        title: "Ошибка",
+        description: "Произошла ошибка при формировании заказа.",
+        variant: "destructive",
+      });
+    }
+  }, [productsWithQuantity, toast, onOrderProductsSuccess]);
+
   useEffect(() => {
     fetchFactories();
     fetchCategories();
@@ -101,7 +129,12 @@ export default function OrderProductsDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="gap-1" variant="default">
+        <Button
+          size="sm"
+          className="gap-1"
+          variant="default"
+          disabled={disabled}
+        >
           <ShoppingCart className="h-3.5 w-3.5" />
           Сделать заказ
         </Button>
@@ -182,7 +215,9 @@ export default function OrderProductsDialog({
           </TableBody>
         </Table>
         <DialogFooter>
-          <Button type="submit">Заказать</Button>
+          <Button type="submit" onClick={handleSumbit}>
+            Заказать
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

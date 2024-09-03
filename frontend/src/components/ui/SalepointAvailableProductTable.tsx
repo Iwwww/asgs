@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -16,124 +16,110 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { File, MoreHorizontal, RefreshCw } from "lucide-react";
-import DeleteProduct from "@/components/ui/DeleteProduct";
-import OrderProducts from "@/components/ui/OrderProducts";
-import {
-  Product,
-  Category,
-  ProductCount,
-  useApi,
-  ProductWithQuantity,
-} from "@/hooks/useApi";
+import { File, RefreshCw } from "lucide-react";
+import { Category, useApi, ProductWithQuantity } from "@/hooks/useApi";
 import { Skeleton } from "./skeleton";
-import EditWarehouseProductCount from "./EditWarehouseProductCount";
-import { Checkbox } from "./checkbox";
-import OrderProductsDialog from "@/components/ui/OrderProducts";
+import OrderProductsDialog from "@/components/ui/OrderProductsDialog";
+import QuantitySelector from "./QuantitySelector";
+
+interface ProductWithQuantityWithSelection extends ProductWithQuantity {
+  selectedValue: number;
+}
+
+interface State {
+  productsWithQuantity: ProductWithQuantityWithSelection[];
+  categories: Category[];
+  isLoading: boolean;
+}
 
 export default function SalepointAvailableProductTable() {
-  const { getProducts, getCategories, getProductsWithQuantity } = useApi();
-  const [productsWithQuantity, setProductsWithQuantity] = useState<
-    ProductWithQuantity[]
-  >([]);
-  const [productIdsSelected, setProductIdsSelected] = useState<number[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [productCounts, setProductCounts] = useState<ProductCount[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { getCategories, getProductsWithQuantity } = useApi();
 
-  const fetchTableData = async () => {
-    setIsLoading(true);
+  const [state, setState] = useState<State>({
+    productsWithQuantity: [],
+    categories: [],
+    isLoading: true,
+  });
+
+  const fetchTableData = useCallback(async () => {
+    setState((prevState) => ({ ...prevState, isLoading: true }));
+
     try {
-      await Promise.all([fetchProductsWithQuantity(), fetchCategories()]);
+      const [productsWithQuantity, categories] = await Promise.all([
+        getProductsWithQuantity(),
+        getCategories(),
+      ]);
+
+      const productsWithQuantitySelected = productsWithQuantity.map((item) => ({
+        ...item,
+        selectedValue: 0,
+      }));
+
+      setState({
+        productsWithQuantity: productsWithQuantitySelected,
+        categories,
+        isLoading: false,
+      });
     } catch (error) {
       console.error("Error fetching data:", error);
-      throw new Error(`Error fetching data: ${error}`);
-    } finally {
-      setIsLoading(false);
+      setState((prevState) => ({ ...prevState, isLoading: false }));
     }
-  };
-
-  const fetchProductsWithQuantity = useCallback(async () => {
-    try {
-      const productsWithQuantity: ProductWithQuantity[] =
-        await getProductsWithQuantity();
-      setProductsWithQuantity(productsWithQuantity);
-    } catch (error) {
-      console.error("Failed to fetch products with its quantity:", error);
-    }
-  }, [getProducts]);
-
-  const fetchCategories = useCallback(async () => {
-    try {
-      const categoriesData = await getCategories();
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error("Failed to fetch categories:", error);
-    }
-  }, [getCategories]);
+  }, [getProductsWithQuantity, getCategories]);
 
   useEffect(() => {
     fetchTableData();
-  }, [fetchProductsWithQuantity, fetchCategories]);
+  }, [fetchTableData]);
 
-  const findCategoryName = (category_id: number): string => {
-    const categoryList = categories;
-    // console.log("categoryList:", categoryList);
-    const category = categoryList.find(
-      (cat: Category) => cat.id === category_id,
-    );
-    console.log("category:", category);
-    return category ? category.name : "Unknown Category";
-  };
+  const findCategoryName = useCallback(
+    (categoryId: number): string => {
+      const category = state.categories.find((cat) => cat.id === categoryId);
+      return category ? category.name : "Unknown Category";
+    },
+    [state.categories],
+  );
+
+  const orderData = useMemo((): ProductWithQuantity[] => {
+    return state.productsWithQuantity
+      .filter((item) => item.selectedValue > 0)
+      .map((item) => ({
+        ...item,
+        amount: item.selectedValue,
+      }));
+  }, [state.productsWithQuantity]);
+
+  const handleQuantityChange = useCallback(
+    (productId: number, newValue: number) => {
+      setState((prevState) => ({
+        ...prevState,
+        productsWithQuantity: prevState.productsWithQuantity.map((item) =>
+          item.product.id === productId
+            ? { ...item, selectedValue: newValue }
+            : item,
+        ),
+      }));
+    },
+    [],
+  );
 
   const TableSkeleton = () => (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="py-4">
-            <Skeleton className="h-6 w-[120px]" />
-          </TableHead>
-          <TableHead className="hidden py-4 md:table-cell">
-            <Skeleton className="h-6 w-[100px]" />
-          </TableHead>
-          <TableHead className="hidden py-4 md:table-cell">
-            <Skeleton className="h-6 w-[80px]" />
-          </TableHead>
-          <TableHead className="hidden py-4 md:table-cell">
-            <Skeleton className="h-6 w-[80px]" />
-          </TableHead>
-          <TableHead className="py-4">
-            <Skeleton className="h-6 w-[120px]" />
-          </TableHead>
+          {[...Array(6)].map((_, idx) => (
+            <TableHead key={idx} className="py-4">
+              <Skeleton className={`h-6 ${idx === 0 ? "w-6" : "w-[120px]"}`} />
+            </TableHead>
+          ))}
         </TableRow>
       </TableHeader>
       <TableBody>
         {[...Array(5)].map((_, index) => (
           <TableRow key={index} className="border-b border-gray-200">
-            <TableCell className="py-4">
-              <Skeleton className="h-6 w-[180px]" />
-            </TableCell>
-            <TableCell className="hidden py-4 md:table-cell">
-              <Skeleton className="h-6 w-[120px]" />
-            </TableCell>
-            <TableCell className="hidden py-4 md:table-cell">
-              <Skeleton className="h-6 w-[80px]" />
-            </TableCell>
-            <TableCell className="hidden py-4 md:table-cell">
-              <Skeleton className="h-6 w-[80px]" />
-            </TableCell>
-            <TableCell className="hidden py-4 md:table-cell">
-              <Skeleton className="h-6 w-[80px]" />
-            </TableCell>
-            <TableCell className="py-4">
-              <Skeleton className="h-6 w-10 md:table-cell" />
-            </TableCell>
+            {[...Array(6)].map((_, idx) => (
+              <TableCell key={idx} className="py-4">
+                <Skeleton className={`h-6 ${idx === 0 ? "w-6" : "w-[80px]"}`} />
+              </TableCell>
+            ))}
           </TableRow>
         ))}
       </TableBody>
@@ -154,28 +140,29 @@ export default function SalepointAvailableProductTable() {
               Export
             </span>
           </Button>
-          <OrderProductsDialog productsWithQuantity={productsWithQuantity} />
-
+          <OrderProductsDialog
+            productsWithQuantity={orderData}
+            onOrderProductsSuccess={fetchTableData}
+          />
           <Button
             onClick={fetchTableData}
-            disabled={isLoading}
+            disabled={state.isLoading}
             size="sm"
             aria-label="Reload data"
           >
             <RefreshCw
-              className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              className={`h-4 w-4 ${state.isLoading ? "animate-spin" : ""}`}
             />
           </Button>
         </div>
       </div>
       <CardContent>
-        {isLoading ? (
+        {state.isLoading ? (
           <TableSkeleton />
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead></TableHead>
                 <TableHead>Наименование</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Категория
@@ -185,90 +172,49 @@ export default function SalepointAvailableProductTable() {
                 <TableHead className="hidden md:table-cell">
                   Количество на складе
                 </TableHead>
-                {/* <TableHead> */}
-                {/*   <span className="sr-only">Действия</span> */}
-                {/* </TableHead> */}
+                <TableHead className="hidden md:table-cell">
+                  Выбрано количество
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {productsWithQuantity.map(
-                (productWithQuantity: ProductWithQuantity, index: number) => {
-                  return (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">
-                        <Checkbox
-                          className="ym-auto"
-                          checked={productIdsSelected.includes(
-                            productWithQuantity.product.id,
-                          )}
-                          onCheckedChange={(checked) => {
-                            checked
-                              ? setProductIdsSelected([
-                                  ...productIdsSelected,
-                                  productWithQuantity.product.id,
-                                ])
-                              : setProductIdsSelected(
-                                  productIdsSelected.filter(
-                                    (item) =>
-                                      item !== productWithQuantity.product.id,
-                                  ),
-                                );
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {productWithQuantity.product.name}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {findCategoryName(productWithQuantity.product.id)}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        ₽{productWithQuantity.product.price}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {productWithQuantity.product.weight}
-                      </TableCell>
-                      <TableCell className="hidden md:table-cell">
-                        {productWithQuantity.amount}
-                      </TableCell>
-                      {/* <TableCell> */}
-                      {/*   <DropdownMenu> */}
-                      {/*     <DropdownMenuTrigger asChild> */}
-                      {/*       <Button */}
-                      {/*         aria-haspopup="true" */}
-                      {/*         size="icon" */}
-                      {/*         variant="ghost" */}
-                      {/*       > */}
-                      {/*         <MoreHorizontal className="h-4 w-4" /> */}
-                      {/*         <span className="sr-only">Toggle menu</span> */}
-                      {/*       </Button> */}
-                      {/*     </DropdownMenuTrigger> */}
-                      {/*     <DropdownMenuContent align="end"> */}
-                      {/*       <DropdownMenuLabel>Действия</DropdownMenuLabel> */}
-                      {/*       <div className="flex flex-col gap-1"> */}
-                      {/*         <EditWarehouseProductCount */}
-                      {/*           productCount={productCount} */}
-                      {/*           onEditSuccess={fetchTableData} */}
-                      {/*         /> */}
-                      {/*         <DeleteProduct */}
-                      {/*           productId={product.id} */}
-                      {/*           onDeleteSuccess={fetchTableData} */}
-                      {/*         /> */}
-                      {/*       </div> */}
-                      {/*     </DropdownMenuContent> */}
-                      {/*   </DropdownMenu> */}
-                      {/* </TableCell> */}
-                    </TableRow>
-                  );
-                },
-              )}
+              {state.productsWithQuantity.map((productWithQuantity, index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">
+                    {productWithQuantity.product.name}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {findCategoryName(productWithQuantity.product.id)}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    ₽{productWithQuantity.product.price}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {productWithQuantity.product.weight}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    {productWithQuantity.amount}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell">
+                    <QuantitySelector
+                      max={productWithQuantity.amount}
+                      onValueChange={(newValue) =>
+                        handleQuantityChange(
+                          productWithQuantity.product.id,
+                          newValue,
+                        )
+                      }
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         )}
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          {/* Показано товаров: <strong>{products.length}</strong> */}
+          {/* Показано товаров: <strong>{state.productsWithQuantity.length}</strong> */}
         </div>
       </CardFooter>
     </Card>

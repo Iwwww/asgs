@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import {
   FACTORIE_URL,
   FACTORY_WAREHOUSE_URL,
+  ORDER_PRODUCTS,
   PRODUCTS_WITH_QUANTITY_URL,
   PRODUCT_CATEGORY_URL,
   PRODUCT_COUNTS_URL,
@@ -51,8 +52,9 @@ export interface ProductCount {
   amount: number;
 }
 
-export interface OrderProducts {
-  products_id: number[];
+export interface ProductOrder {
+  product_id: number;
+  quantity: number;
 }
 
 export interface ProductWithQuantity {
@@ -306,6 +308,21 @@ export const useApi = () => {
     [token],
   );
 
+  const postOrderProducts = useCallback(
+    withTokenValidation(
+      async (productsOrder: ProductOrder[]): Promise<ProductOrder[]> => {
+        const response = await apiCall<ProductOrder[]>(
+          "post",
+          `${ORDER_PRODUCTS}`,
+          productsOrder,
+        );
+        return response;
+      },
+      token,
+    ),
+    [token],
+  );
+
   return {
     getProducts,
     postProduct,
@@ -322,5 +339,6 @@ export const useApi = () => {
     getSalepointAvailableProducts,
     getProductsWithQuantity,
     getFactories,
+    postOrderProducts,
   };
 };
