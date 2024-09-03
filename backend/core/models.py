@@ -68,8 +68,8 @@ class ProductOrder(models.Model):
     ]
 
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
-    amount = models.IntegerField()
     order_date = models.DateTimeField()
+    quantity = models.IntegerField()
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="in_processing"
     )
@@ -85,24 +85,24 @@ class SalePoint(models.Model):
         ProductOrder, related_name="sale_points", blank=True
     )
 
-    def create_order(self, product, amount):
+    def create_order(self, product, quantity):
         with transaction.atomic():
             factory_warehouse = FactoryWarehouse.objects.filter(product=product).first()
-            if not factory_warehouse or factory_warehouse.amount < amount:
+            if not factory_warehouse or factory_warehouse.amount < quantity:
                 raise ValidationError(
                     "Insufficient product quantity in the factory warehouse."
                 )
 
             order = ProductOrder.objects.create(
                 product=product,
-                amount=amount,
+                quantity=quantity,
                 order_date=datetime.now(timezone.utc),
                 status="in_processing",
             )
 
             self.product_orders.add(order)
 
-            factory_warehouse.amount -= amount
+            factory_warehouse.quantity -= quantity
             factory_warehouse.save()
 
             return order

@@ -198,7 +198,7 @@ class ProductOrderSerializer(serializers.ModelSerializer):
 
 class CreateOrderSerializer(serializers.Serializer):
     product_id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    quantity = serializers.IntegerField()
 
     def validate(self, data):
         product = Product.objects.get(id=data["product_id"])
@@ -218,10 +218,10 @@ class CreateOrderSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         product = validated_data["product"]
-        amount = validated_data["amount"]
+        quantity = validated_data["quantity"]
         sale_point = validated_data["sale_point"]
 
-        order = sale_point.create_order(product, amount)
+        order = sale_point.create_order(product, quantity)
 
         return order
 
