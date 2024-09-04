@@ -60,6 +60,11 @@ class FactoryWarehouse(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
 
+class SalePoint(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=255)
+
+
 class ProductOrder(models.Model):
     STATUS_CHOICES = [
         ("in_processing", "In Processing"),
@@ -67,6 +72,7 @@ class ProductOrder(models.Model):
         ("delivered", "Delivered"),
     ]
 
+    sale_point = models.ForeignKey(SalePoint, on_delete=models.PROTECT)
     product = models.ForeignKey(Product, on_delete=models.PROTECT)
     quantity = models.PositiveIntegerField()
     order_date = models.DateTimeField(auto_now=True)
@@ -104,14 +110,6 @@ class ProductOrder(models.Model):
             factory_warehouse.save()
 
             return order
-
-
-class SalePoint(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=255)
-    product_orders = models.ManyToManyField(
-        ProductOrder, related_name="sale_points", blank=True
-    )
 
 
 class Carrier(models.Model):

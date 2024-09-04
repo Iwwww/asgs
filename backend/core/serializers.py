@@ -181,7 +181,15 @@ class ProductOrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductOrder
-        fields = ["id", "product_id", "quantity", "order_date", "status", "factory_id"]
+        fields = [
+            "id",
+            "product_id",
+            "quantity",
+            "order_date",
+            "status",
+            "factory_id",
+            "sale_point_id",
+        ]
 
     def get_factory_id(self, obj):
         factory_warehouse = FactoryWarehouse.objects.filter(product=obj.product).first()
@@ -223,7 +231,7 @@ class CreateOrderSerializer(serializers.Serializer):
 class SalePointSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalePoint
-        fields = ["id", "name", "address", "product_orders"]
+        fields = ["id", "name", "address"]
 
 
 class ProductsWithQuantitySerializer(serializers.Serializer):
