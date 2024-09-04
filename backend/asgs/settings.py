@@ -46,6 +46,31 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 print("ALLOWED_HOSTS:", ALLOWED_HOSTS)
 
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "file": {
+            "level": "INFO",
+            "class": "logging.FileHandler",
+            "filename": "./debug.log",
+        },
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+        "core": {
+            "handlers": ["file"],
+            "level": "DEBUG",
+            "propagate": True,
+        },
+    },
+}
+
+
 # Application definition
 
 INSTALLED_APPS = [
