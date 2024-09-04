@@ -77,18 +77,17 @@ class ProductOrder(models.Model):
         "Delivery", related_name="product_orders", blank=True
     )
 
-
-class SalePoint(models.Model):
-    name = models.CharField(max_length=100)
-    address = models.CharField(max_length=255)
-    product_orders = models.ManyToManyField(
-        ProductOrder, related_name="sale_points", blank=True
-    )
-
+    @staticmethod
     def create_order(self, product, quantity):
         with transaction.atomic():
-            factory_warehouse = FactoryWarehouse.objects.filter(product=product).first()
-            if not factory_warehouse or factory_warehouse.amount < quantity:
+            logger.debug("Logging from models.py (DEBUG level)")
+            logger.info("Logging from models.py (INFO level)")
+            factory_warehouse = (
+                FactoryWarehouse.objects.select_for_update()
+                .filter(product=product)
+                .first()
+            )
+            if not factory_warehouse or factory_warehouse.quantity < quantity:
                 raise ValidationError(
                     "Insufficient product quantity in the factory warehouse."
                 )
@@ -96,16 +95,23 @@ class SalePoint(models.Model):
             order = ProductOrder.objects.create(
                 product=product,
                 quantity=quantity,
-                order_date=datetime.now(timezone.utc),
                 status="in_processing",
             )
 
-            self.product_orders.add(order)
+            logger.info(f"In models")
 
             factory_warehouse.quantity -= quantity
             factory_warehouse.save()
 
             return order
+
+
+class SalePoint(models.Model):
+    name = models.CharField(max_length=100)
+    address = models.CharField(max_length=255)
+    product_orders = models.ManyToManyField(
+        ProductOrder, related_name="sale_points", blank=True
+    )
 
 
 class Carrier(models.Model):

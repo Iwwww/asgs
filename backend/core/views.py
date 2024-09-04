@@ -279,12 +279,7 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
                     f"Insufficient product quantity in the factory warehouse for product {product.name}."
                 )
 
-            order = ProductOrder.objects.create(
-                product=product, quantity=quantity, status="in_processing"
-            )
-            order.sale_points.add(sale_point)
-            order.save()
-
+            order = ProductOrder.create_order(ProductOrder, product, quantity)
             orders.append(order)
 
         return orders
