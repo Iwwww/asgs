@@ -177,25 +177,17 @@ class FactoryWarehouseSerializer(serializers.ModelSerializer):
 
 
 class ProductOrderSerializer(serializers.ModelSerializer):
+    factory_id = serializers.SerializerMethodField()
+
     class Meta:
         model = ProductOrder
-        fields = ["id", "product", "quantity", "order_date", "status"]
+        fields = ["id", "product_id", "quantity", "order_date", "status", "factory_id"]
 
-    def validate(self, data):
-        product = data.get("product")
-        if product:
-            factory_warehouse = FactoryWarehouse.objects.filter(
-                product=product, factory__in=product.factories.all()
-            ).first()
-
-            if not factory_warehouse or factory_warehouse.quantity < data.get(
-                "quantity"
-            ):
-                raise serializers.ValidationError(
-                    f"Insufficient product quantity in the factory warehouse."
-                )
-
-        return data
+    def get_factory_id(self, obj):
+        factory_warehouse = FactoryWarehouse.objects.filter(product=obj.product).first()
+        if factory_warehouse:
+            return factory_warehouse.factory.id
+        return None
 
 
 class CreateOrderSerializer(serializers.Serializer):

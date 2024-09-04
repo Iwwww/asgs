@@ -233,13 +233,13 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
     queryset = (
         ProductOrder.objects.all()
         .select_related("product")
-        .prefetch_related("sale_points")
+        .prefetch_related("sale_points", "product__factorywarehouse__factory")
     )
     permission_classes = [permissions.IsAuthenticated]
 
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
-            self.permission_classes = [IsAuthenticated, IsSalePointUser]
+            self.permission_classes = [IsSalePointUser | IsAdminUser]
         else:
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
@@ -248,7 +248,7 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
         user = self.request.user
         if user.is_authenticated and user.sale_points.exists():
             return ProductOrder.objects.filter(sale_points__in=user.sale_points.all())
-        return ProductOrder.objects.none()
+        return ProductOrder.objects.all().order_by("order_date")
 
     def get_serializer_class(self):
         if self.action == "create":
