@@ -4,13 +4,20 @@ import { useCallback } from "react";
 import {
   FACTORIE_URL,
   FACTORY_WAREHOUSE_URL,
-  ORDER_PRODUCTS,
+  ORDER_PRODUCTS_URL,
   PRODUCTS_WITH_QUANTITY_URL,
   PRODUCT_CATEGORY_URL,
   PRODUCT_COUNTS_URL,
   PRODUCT_URL,
   SALEPOINT_AVAILABLE_PRODUCTS_URL,
+  SALEPOINT_URL,
 } from "@/api/constants";
+
+interface ListResponseHeader {
+  count: number;
+  next: string | null;
+  previous: string | null;
+}
 
 export interface ProductWithoutId {
   name: string;
@@ -24,10 +31,7 @@ export interface Product extends ProductWithoutId {
   id: number;
 }
 
-interface ProductResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
+interface ProductResponse extends ListResponseHeader {
   results: Product[];
 }
 
@@ -40,16 +44,13 @@ export interface Category extends CategoryWithoutId {
   id: number;
 }
 
-interface CategoryResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
+interface CategoryResponse extends ListResponseHeader {
   results: Category[];
 }
 
 export interface ProductCount {
   product: number;
-  amount: number;
+  quantity: number;
 }
 
 export interface ProductOrder {
@@ -60,7 +61,7 @@ export interface ProductOrder {
 export interface ProductWithQuantity {
   product: Product;
   factory_id: number;
-  amount: number;
+  quantity: number;
 }
 
 export interface Factory {
@@ -69,11 +70,32 @@ export interface Factory {
   address: string;
 }
 
-interface FactoryResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
+interface FactoryResponse extends ListResponseHeader {
   results: Factory[];
+}
+
+export interface Order {
+  id: number;
+  product_id: number;
+  quantity: number;
+  order_date: string;
+  status: string;
+  factory_id: number;
+  sale_point_id: number;
+}
+
+export interface Salepoint {
+  id: number;
+  name: string;
+  address: string;
+}
+
+interface SalepointsResponse extends ListResponseHeader {
+  results: Salepoint[];
+}
+
+interface OrdersResponse extends ListResponseHeader {
+  results: Order[];
 }
 
 const getAuthHeaders = (token: string) => ({
@@ -313,13 +335,35 @@ export const useApi = () => {
       async (productsOrder: ProductOrder[]): Promise<ProductOrder[]> => {
         const response = await apiCall<ProductOrder[]>(
           "post",
-          `${ORDER_PRODUCTS}`,
+          `${ORDER_PRODUCTS_URL}`,
           productsOrder,
         );
         return response;
       },
       token,
     ),
+    [token],
+  );
+
+  const getOrders = useCallback(
+    withTokenValidation(async (): Promise<Order[]> => {
+      const response: OrdersResponse = await apiCall<OrdersResponse>(
+        "get",
+        `${ORDER_PRODUCTS_URL}`,
+      );
+      return response.results;
+    }, token),
+    [token],
+  );
+
+  const getSalepoints = useCallback(
+    withTokenValidation(async (): Promise<Salepoint[]> => {
+      const response: SalepointsResponse = await apiCall<SalepointsResponse>(
+        "get",
+        `${SALEPOINT_URL}`,
+      );
+      return response.results;
+    }, token),
     [token],
   );
 
@@ -340,5 +384,7 @@ export const useApi = () => {
     getProductsWithQuantity,
     getFactories,
     postOrderProducts,
+    getOrders,
+    getSalepoints,
   };
 };
