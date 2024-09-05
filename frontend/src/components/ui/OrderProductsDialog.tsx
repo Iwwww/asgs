@@ -95,6 +95,10 @@ export default function OrderProductsDialog({
     return category ? category.name : "Неизвестно";
   };
 
+  const close = () => {
+    setOpen(false);
+  };
+
   const handleSumbit = useCallback(async () => {
     const productsOrder: ProductOrder[] = productsWithQuantity.map(
       (item: ProductWithQuantity) => ({
@@ -112,6 +116,7 @@ export default function OrderProductsDialog({
       if (onOrderProductsSuccess) {
         onOrderProductsSuccess();
       }
+      close();
     } catch (error) {
       toast({
         title: "Ошибка",
@@ -120,6 +125,10 @@ export default function OrderProductsDialog({
       });
     }
   }, [productsWithQuantity, toast, onOrderProductsSuccess]);
+
+  const valideForm = () => {
+    return productsWithQuantity.length > 0;
+  };
 
   useEffect(() => {
     fetchFactories();
@@ -215,7 +224,7 @@ export default function OrderProductsDialog({
           </TableBody>
         </Table>
         <DialogFooter>
-          <Button type="submit" onClick={handleSumbit}>
+          <Button type="submit" onClick={handleSumbit} disabled={!valideForm()}>
             Заказать
           </Button>
         </DialogFooter>

@@ -66,6 +66,10 @@ export default function SalepointAvailableProductTable() {
     }
   }, [getProductsWithQuantity, getCategories]);
 
+  const validForm = () => {
+    return orderData.length > 0;
+  };
+
   useEffect(() => {
     fetchTableData();
   }, [fetchTableData]);
@@ -143,6 +147,7 @@ export default function SalepointAvailableProductTable() {
           <OrderProductsDialog
             productsWithQuantity={orderData}
             onOrderProductsSuccess={fetchTableData}
+            disabled={!validForm()}
           />
           <Button
             onClick={fetchTableData}
