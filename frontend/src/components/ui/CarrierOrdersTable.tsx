@@ -1,3 +1,5 @@
+"use client";
+
 import { parseISO, format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useState, useEffect, useCallback } from "react";
@@ -18,33 +20,42 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { File, MoreHorizontal, RefreshCw } from "lucide-react";
-import EditProduct from "@/components/ui/EditProduct";
-import DeleteProduct from "@/components/ui/DeleteProduct";
 import { Product, Category, useApi, Order, Factory } from "@/hooks/useApi";
 import AddProduct from "./AddProduct";
 import { Skeleton } from "./skeleton";
+import { StatusComboboxPopover } from "./StatusComboboxPopover";
 
 const STATUS_CHOICES: { [key: string]: string } = {
   in_processing: "В обработке",
   delivery: "Доставляется",
   delivered: "Доставлен",
 };
+
 export default function CarrierOrdersTable() {
-  const { getProducts, getCategories, getOrders, getFactories, getSalepoints } =
-    useApi();
+  const {
+    getProducts,
+    getCategories,
+    getOrders,
+    getFactories,
+    getSalepoints,
+    updateOrderStatus,
+  } = useApi();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [factories, setFactories] = useState<Factory[]>([]);
   const [salepoints, setSalepoints] = useState<Factory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
 
   const fetchTableData = async () => {
     setIsLoading(true);
@@ -111,6 +122,41 @@ export default function CarrierOrdersTable() {
     fetchTableData();
     setIsLoading(false);
   }, [fetchOrders]);
+
+  const handleRowSelect = (orderId: number) => {
+    setSelectedOrders((prev) =>
+      prev.includes(orderId)
+        ? prev.filter((id) => id !== orderId)
+        : [...prev, orderId],
+    );
+  };
+
+  const handleSelectAll = () => {
+    setSelectedOrders((prev) =>
+      prev.length === orders.length ? [] : orders.map((order) => order.id),
+    );
+  };
+
+  const handleStatusChange = async (orderId: number, newStatus: string) => {
+    try {
+      await updateOrderStatus(orderId, newStatus);
+      await fetchOrders();
+    } catch (error) {
+      console.error("Failed to update order status:", error);
+    }
+  };
+
+  const handleBulkStatusChange = async (newStatus: string) => {
+    try {
+      await Promise.all(
+        selectedOrders.map((orderId) => updateOrderStatus(orderId, newStatus)),
+      );
+      await fetchOrders();
+      setSelectedOrders([]);
+    } catch (error) {
+      console.error("Failed to update order statuses:", error);
+    }
+  };
 
   const findCategoryName = (category_id: number): string => {
     const categoryList = categories;
@@ -200,6 +246,10 @@ export default function CarrierOrdersTable() {
           <CardDescription>Управление заказами</CardDescription>
         </CardHeader>
         <div className="ml-auto flex items-center gap-2 p-6">
+          <StatusComboboxPopover
+            selectedOrders={selectedOrders}
+            onStatusChange={handleBulkStatusChange}
+          />
           <Button size="sm" variant="outline" className="gap-1">
             <File className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
@@ -226,6 +276,12 @@ export default function CarrierOrdersTable() {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-[50px]">
+                  <Checkbox
+                    checked={selectedOrders.length === orders.length}
+                    onCheckedChange={handleSelectAll}
+                  />
+                </TableHead>
                 <TableHead>Товар</TableHead>
                 <TableHead className="hidden md:table-cell">
                   Торговая точка
@@ -250,7 +306,18 @@ export default function CarrierOrdersTable() {
             </TableHeader>
             <TableBody>
               {orders.map((order: Order, index: number) => (
-                <TableRow key={index}>
+                <TableRow
+                  key={index}
+                  className={
+                    selectedOrders.includes(order.id) ? "bg-muted" : ""
+                  }
+                >
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedOrders.includes(order.id)}
+                      onCheckedChange={() => handleRowSelect(order.id)}
+                    />
+                  </TableCell>
                   <TableCell className="font-medium">
                     {getProductName(order.product_id)}
                   </TableCell>
@@ -281,7 +348,8 @@ export default function CarrierOrdersTable() {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Показано заказов: <strong>{orders.length}</strong>
+          Показано заказов: <strong>{orders.length}</strong>, Выбрано:{" "}
+          <strong>{selectedOrders.length}</strong>
         </div>
       </CardFooter>
     </Card>
