@@ -41,6 +41,7 @@ import AddProduct from "./AddProduct";
 import { Skeleton } from "./skeleton";
 import { StatusComboboxPopover } from "./StatusComboboxPopover";
 import { ConfirmStatusChangeDialog } from "./ConfirmStatusChangeDialog";
+import { useToast } from "./use-toast";
 
 const STATUS_CHOICES: { [key: string]: string } = {
   in_processing: "В обработке",
@@ -66,6 +67,7 @@ export default function CarrierOrdersTable() {
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const fetchTableData = async () => {
     setIsLoading(true);
@@ -110,6 +112,7 @@ export default function CarrierOrdersTable() {
       console.error("Failed to fetch products:", error);
     }
   }, [getProducts]);
+
   const fetchCategories = useCallback(async () => {
     try {
       const categoriesData = await getCategories();
@@ -155,6 +158,15 @@ export default function CarrierOrdersTable() {
       await patchOrdersStatus(newOrdersStatus);
       await fetchOrders();
       setSelectedOrders([]);
+      toast({
+        title: "Статус товаров изменён",
+        description: (
+          <>
+            Статус товаров изменён на
+            {<strong> {STATUS_CHOICES[newStatus]}</strong>}
+          </>
+        ),
+      });
     } catch (error) {
       console.error("Failed to update order statuses:", error);
     }
