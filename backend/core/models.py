@@ -27,8 +27,16 @@ class ExtendedUser(AbstractUser):
         return [group.name for group in self.groups.all()]
 
     @property
+    def is_factory_user(self):
+        return self.carriers.exists()
+
+    @property
     def is_sale_point_user(self):
         return self.sale_points.exists()
+
+    @property
+    def is_carrier_user(self):
+        return self.carriers.exists()
 
 
 class ProductCategory(models.Model):

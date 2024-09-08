@@ -4,13 +4,14 @@ import { useCallback } from "react";
 import {
   FACTORIE_URL,
   FACTORY_WAREHOUSE_URL,
-  ORDER_PRODUCTS_URL,
+  PRODUCT_ORDER_URL,
   PRODUCTS_WITH_QUANTITY_URL,
   PRODUCT_CATEGORY_URL,
   PRODUCT_COUNTS_URL,
   PRODUCT_URL,
   SALEPOINT_AVAILABLE_PRODUCTS_URL,
   SALEPOINT_URL,
+  UPDATE_ORDERS_STATUS_URL,
 } from "@/api/constants";
 
 interface ListResponseHeader {
@@ -74,12 +75,15 @@ interface FactoryResponse extends ListResponseHeader {
   results: Factory[];
 }
 
-export interface Order {
+export interface OrderStatus {
   id: number;
+  status: string;
+}
+
+export interface Order extends OrderStatus {
   product_id: number;
   quantity: number;
   order_date: string;
-  status: string;
   factory_id: number;
   sale_point_id: number;
 }
@@ -96,6 +100,11 @@ interface SalepointsResponse extends ListResponseHeader {
 
 interface OrdersResponse extends ListResponseHeader {
   results: Order[];
+}
+
+interface patchOrdersStatusResponse {
+  updated_orders: number;
+  status: string;
 }
 
 const getAuthHeaders = (token: string) => ({
@@ -128,7 +137,7 @@ export const useApi = () => {
   const { token } = useAuth();
 
   const apiCall = async <T>(
-    method: "get" | "post" | "put" | "delete",
+    method: "get" | "post" | "put" | "delete" | "patch",
     url: string,
     data?: any,
   ): Promise<T> => {
@@ -335,7 +344,7 @@ export const useApi = () => {
       async (productsOrder: ProductOrder[]): Promise<ProductOrder[]> => {
         const response = await apiCall<ProductOrder[]>(
           "post",
-          `${ORDER_PRODUCTS_URL}`,
+          `${PRODUCT_ORDER_URL}`,
           productsOrder,
         );
         return response;
@@ -349,7 +358,7 @@ export const useApi = () => {
     withTokenValidation(async (): Promise<Order[]> => {
       const response: OrdersResponse = await apiCall<OrdersResponse>(
         "get",
-        `${ORDER_PRODUCTS_URL}`,
+        `${PRODUCT_ORDER_URL}`,
       );
       return response.results;
     }, token),
@@ -364,6 +373,23 @@ export const useApi = () => {
       );
       return response.results;
     }, token),
+    [token],
+  );
+
+  const patchOrdersStatus = useCallback(
+    withTokenValidation(
+      async (
+        ordersStatus: OrderStatus[],
+      ): Promise<patchOrdersStatusResponse> => {
+        const response = await apiCall<patchOrdersStatusResponse>(
+          "patch",
+          `${UPDATE_ORDERS_STATUS_URL}`,
+          ordersStatus,
+        );
+        return response;
+      },
+      token,
+    ),
     [token],
   );
 
@@ -386,5 +412,6 @@ export const useApi = () => {
     postOrderProducts,
     getOrders,
     getSalepoints,
+    patchOrdersStatus,
   };
 };

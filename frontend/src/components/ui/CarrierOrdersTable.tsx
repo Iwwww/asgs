@@ -29,7 +29,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { File, MoreHorizontal, RefreshCw } from "lucide-react";
-import { Product, Category, useApi, Order, Factory } from "@/hooks/useApi";
+import {
+  Product,
+  Category,
+  useApi,
+  Order,
+  Factory,
+  OrderStatus,
+} from "@/hooks/useApi";
 import AddProduct from "./AddProduct";
 import { Skeleton } from "./skeleton";
 import { StatusComboboxPopover } from "./StatusComboboxPopover";
@@ -47,7 +54,7 @@ export default function CarrierOrdersTable() {
     getOrders,
     getFactories,
     getSalepoints,
-    updateOrderStatus,
+    patchOrdersStatus,
   } = useApi();
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -137,31 +144,26 @@ export default function CarrierOrdersTable() {
     );
   };
 
-  const handleStatusChange = async (orderId: number, newStatus: string) => {
-    try {
-      await updateOrderStatus(orderId, newStatus);
-      await fetchOrders();
-    } catch (error) {
-      console.error("Failed to update order status:", error);
-    }
-  };
+  // const handleStatusChange = async (orderId: number, newStatus: string) => {
+  //   try {
+  //     await updateOrderStatus(orderId, newStatus);
+  //     await fetchOrders();
+  //   } catch (error) {
+  //     console.error("Failed to update order status:", error);
+  //   }
+  // };
 
   const handleBulkStatusChange = async (newStatus: string) => {
     try {
-      await Promise.all(
-        selectedOrders.map((orderId) => updateOrderStatus(orderId, newStatus)),
+      const newOrdersStatus: OrderStatus[] = selectedOrders.map(
+        (order: number) => ({ id: order, status: newStatus }),
       );
+      await Promise.all(patchOrdersStatus(newOrdersStatus));
       await fetchOrders();
       setSelectedOrders([]);
     } catch (error) {
       console.error("Failed to update order statuses:", error);
     }
-  };
-
-  const findCategoryName = (category_id: number): string => {
-    const categoryList = categories;
-    const category = categoryList.find((cat) => cat.id === category_id);
-    return category ? category.name : "Неизвестная категория";
   };
 
   const getProduct = (product_id: number): Product | undefined => {

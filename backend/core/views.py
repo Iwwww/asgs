@@ -235,11 +235,11 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
         .select_related("product")
         .prefetch_related("sale_points", "product__factorywarehouse__factory")
     )
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated | IsCarrierUser]
 
     def get_permissions(self):
         if self.action in ["create", "update", "partial_update", "destroy"]:
-            self.permission_classes = [IsSalePointUser | IsAdminUser]
+            self.permission_classes = [IsSalePointUser | IsCarrierUser | IsAdminUser]
         else:
             self.permission_classes = [IsAuthenticated]
         return super().get_permissions()
@@ -283,6 +283,55 @@ class ProductOrderViewSet(viewsets.ModelViewSet):
             orders.append(order)
 
         return orders
+
+    @action(detail=False, methods=["patch"], url_path="bulk-update-status")
+    def bulk_update_status(self, request):
+        orders_data = request.data
+        if not isinstance(orders_data, list):
+            return Response(
+                {"error": "Data should be a list of orders."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        updated_orders = []
+        with transaction.atomic():
+            for order_data in orders_data:
+                order_id = order_data.get("id")
+                new_status = order_data.get("status")
+
+                if not order_id or not new_status:
+                    return Response(
+                        {"error": "Each order must contain 'id' and 'status'."},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                try:
+                    order = ProductOrder.objects.get(id=order_id)
+                except ProductOrder.DoesNotExist:
+                    return Response(
+                        {"error": f"Order with id {order_id} does not exist."},
+                        status=status.HTTP_404_NOT_FOUND,
+                    )
+
+                if new_status not in dict(ProductOrder.STATUS_CHOICES):
+                    return Response(
+                        {
+                            "error": f"Invalid status '{new_status}' for order with id {order_id}."
+                        },
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+                order.status = new_status
+                order.save()
+                updated_orders.append(order)
+
+        return Response(
+            {
+                "status": "Orders updated successfully.",
+                "updated_orders": len(updated_orders),
+            },
+            status=status.HTTP_200_OK,
+        )
 
 
 class SalePointViewSet(viewsets.ModelViewSet):

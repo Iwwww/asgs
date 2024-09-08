@@ -39,3 +39,8 @@ class CanDeleteProduct(permissions.BasePermission):
 class IsSalePointUser(permissions.BasePermission):
     def has_permission(self, request, view):
         return request.user.is_authenticated and request.user.is_sale_point_user
+
+
+class IsCarrierUser(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.is_carrier_user
