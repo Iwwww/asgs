@@ -40,6 +40,7 @@ import {
 import AddProduct from "./AddProduct";
 import { Skeleton } from "./skeleton";
 import { StatusComboboxPopover } from "./StatusComboboxPopover";
+import { ConfirmStatusChangeDialog } from "./ConfirmStatusChangeDialog";
 
 const STATUS_CHOICES: { [key: string]: string } = {
   in_processing: "В обработке",
@@ -63,6 +64,8 @@ export default function CarrierOrdersTable() {
   const [salepoints, setSalepoints] = useState<Factory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState<number[]>([]);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
+  const [newStatus, setNewStatus] = useState<string | null>(null);
 
   const fetchTableData = async () => {
     setIsLoading(true);
@@ -144,26 +147,22 @@ export default function CarrierOrdersTable() {
     );
   };
 
-  // const handleStatusChange = async (orderId: number, newStatus: string) => {
-  //   try {
-  //     await updateOrderStatus(orderId, newStatus);
-  //     await fetchOrders();
-  //   } catch (error) {
-  //     console.error("Failed to update order status:", error);
-  //   }
-  // };
-
-  const handleBulkStatusChange = async (newStatus: string) => {
+  const handleConfirmStatusChange = async () => {
     try {
       const newOrdersStatus: OrderStatus[] = selectedOrders.map(
         (order: number) => ({ id: order, status: newStatus }),
       );
-      await Promise.all(patchOrdersStatus(newOrdersStatus));
+      await patchOrdersStatus(newOrdersStatus);
       await fetchOrders();
       setSelectedOrders([]);
     } catch (error) {
       console.error("Failed to update order statuses:", error);
     }
+  };
+
+  const handleStatusChangeRequest = (status: string) => {
+    setNewStatus(status);
+    setIsConfirmDialogOpen(true);
   };
 
   const getProduct = (product_id: number): Product | undefined => {
@@ -250,7 +249,7 @@ export default function CarrierOrdersTable() {
         <div className="ml-auto flex items-center gap-2 p-6">
           <StatusComboboxPopover
             selectedOrders={selectedOrders}
-            onStatusChange={handleBulkStatusChange}
+            onStatusChange={handleStatusChangeRequest}
           />
           <Button size="sm" variant="outline" className="gap-1">
             <File className="h-3.5 w-3.5" />
@@ -354,6 +353,13 @@ export default function CarrierOrdersTable() {
           <strong>{selectedOrders.length}</strong>
         </div>
       </CardFooter>
+      <ConfirmStatusChangeDialog
+        isOpen={isConfirmDialogOpen}
+        onClose={() => setIsConfirmDialogOpen(false)}
+        onConfirm={handleConfirmStatusChange}
+        selectedCount={selectedOrders.length}
+        newStatus={STATUS_CHOICES[newStatus || ""]}
+      />
     </Card>
   );
 }

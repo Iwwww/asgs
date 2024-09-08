@@ -7,6 +7,8 @@ import {
   Circle,
   HelpCircle,
   LucideIcon,
+  Plus,
+  PlusIcon,
   XCircle,
 } from "lucide-react";
 
@@ -83,14 +85,8 @@ export function StatusComboboxPopover({
             className="w-[200px] justify-start"
             disabled={selectedOrders.length === 0}
           >
-            {selectedStatus ? (
-              <>
-                <selectedStatus.icon className="mr-2 h-4 w-4 shrink-0" />
-                {selectedStatus.label}
-              </>
-            ) : (
-              <>+ Установить статус</>
-            )}
+            <PlusIcon className="mr-2 h-4 w-4" />
+            Установить статус
           </Button>
         </PopoverTrigger>
         <PopoverContent className="p-0" side="right" align="start">
@@ -112,14 +108,7 @@ export function StatusComboboxPopover({
                       setOpen(false);
                     }}
                   >
-                    <status.icon
-                      className={cn(
-                        "mr-2 h-4 w-4",
-                        status.value === selectedStatus?.value
-                          ? "opacity-100"
-                          : "opacity-40",
-                      )}
-                    />
+                    <status.icon className={"mr-2 h-4 w-4"} />
                     <span>{status.label}</span>
                   </CommandItem>
                 ))}
