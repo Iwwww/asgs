@@ -90,6 +90,7 @@ class ProductOrder(models.Model):
     deliveries = models.ManyToManyField(
         "Delivery", related_name="product_orders", blank=True
     )
+    delivery_cost = models.DecimalField(max_digits=10, decimal_places=2)
 
     @staticmethod
     def create_order(self, product, quantity):
@@ -119,17 +120,15 @@ class ProductOrder(models.Model):
 
             return order
 
+    @staticmethod
+    def calculate_delivery_cost(self, product, quantity):
+        pass
+
 
 class Carrier(models.Model):
     name = models.CharField(max_length=100)
 
 
 class Delivery(models.Model):
-    PRIORITY_CHOICES = [(1, "Low"), (2, "Medium"), (3, "High")]
-
     carrier = models.ForeignKey(Carrier, on_delete=models.PROTECT)
-    delivery_cost = models.DecimalField(max_digits=10, decimal_places=2)
-    date = models.DateTimeField()
-    priority = models.IntegerField(
-        choices=PRIORITY_CHOICES, default=PRIORITY_CHOICES[0][0]
-    )
+    cost = models.DecimalField(max_digits=10, decimal_places=2)

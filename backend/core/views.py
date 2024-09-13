@@ -38,6 +38,7 @@ from core.serializers import (
 
 from core.permissions import (
     IsAdminUser,
+    IsCarrierUser,
     IsFactoryGroup,
     IsSalePointUser,
     IsSelf,

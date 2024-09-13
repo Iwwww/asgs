@@ -28,7 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { File, MoreHorizontal, RefreshCw } from "lucide-react";
+import { ArrowUpDown, File, MoreHorizontal, RefreshCw } from "lucide-react";
 import {
   Product,
   Category,
@@ -42,6 +42,7 @@ import { Skeleton } from "./skeleton";
 import { StatusComboboxPopover } from "./StatusComboboxPopover";
 import { ConfirmStatusChangeDialog } from "./ConfirmStatusChangeDialog";
 import { useToast } from "./use-toast";
+import { Input } from "./input";
 
 const STATUS_CHOICES: { [key: string]: string } = {
   in_processing: "В обработке",
@@ -61,6 +62,7 @@ export default function CarrierOrdersTable() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
   const [factories, setFactories] = useState<Factory[]>([]);
   const [salepoints, setSalepoints] = useState<Factory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -68,6 +70,9 @@ export default function CarrierOrdersTable() {
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [newStatus, setNewStatus] = useState<string | null>(null);
   const { toast } = useToast();
+  const [filterValue, setFilterValue] = useState("");
+  const [sortColumn, setSortColumn] = useState<keyof Order | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const fetchTableData = async () => {
     setIsLoading(true);
@@ -90,10 +95,55 @@ export default function CarrierOrdersTable() {
     try {
       const ordersData = await getOrders();
       setOrders(ordersData);
+      setFilteredOrders(ordersData);
     } catch (error) {
       console.error("Failed to fetch orders:", error);
     }
   }, [getOrders]);
+
+  const filterOrders = useCallback(() => {
+    const filtered = orders.filter(
+      (order) =>
+        getProductName(order.product_id)
+          .toLowerCase()
+          .includes(filterValue.toLowerCase()) ||
+        salepointName(order.sale_point_id)
+          .toLowerCase()
+          .includes(filterValue.toLowerCase()) ||
+        factoryName(order.factory_id)
+          .toLowerCase()
+          .includes(filterValue.toLowerCase()) ||
+        STATUS_CHOICES[order.status]
+          .toLowerCase()
+          .includes(filterValue.toLowerCase()),
+    );
+    setFilteredOrders(filtered);
+  }, [orders, filterValue]);
+
+  // New function for sorting orders
+  const sortOrders = useCallback(
+    (column: keyof Order) => {
+      if (sortColumn === column) {
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      } else {
+        setSortColumn(column);
+        setSortDirection("asc");
+      }
+
+      const sorted = [...filteredOrders].sort((a, b) => {
+        if (a[column] < b[column]) return sortDirection === "asc" ? -1 : 1;
+        if (a[column] > b[column]) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+
+      setFilteredOrders(sorted);
+    },
+    [sortColumn, sortDirection, filteredOrders],
+  );
+
+  useEffect(() => {
+    filterOrders();
+  }, [filterValue, orders]);
 
   const fetchFactories = useCallback(async () => {
     try {
@@ -162,7 +212,7 @@ export default function CarrierOrdersTable() {
         title: "Статус товаров изменён",
         description: (
           <>
-            Статус товаров изменён на
+            Статус {<strong>{selectedOrders.length}</strong>} товаров изменён на
             {<strong> {STATUS_CHOICES[newStatus]}</strong>}
           </>
         ),
@@ -259,6 +309,12 @@ export default function CarrierOrdersTable() {
           <CardDescription>Управление заказами</CardDescription>
         </CardHeader>
         <div className="ml-auto flex items-center gap-2 p-6">
+          <Input
+            placeholder="Фильтр..."
+            value={filterValue}
+            onChange={(e) => setFilterValue(e.target.value)}
+            className="max-w-sm"
+          />
           <StatusComboboxPopover
             selectedOrders={selectedOrders}
             onStatusChange={handleStatusChangeRequest}
@@ -291,30 +347,67 @@ export default function CarrierOrdersTable() {
               <TableRow>
                 <TableHead className="w-[50px]">
                   <Checkbox
-                    checked={selectedOrders.length === orders.length}
+                    checked={selectedOrders.length === filteredOrders.length}
                     onCheckedChange={handleSelectAll}
                   />
                 </TableHead>
-                <TableHead>Товар</TableHead>
-                <TableHead className="hidden md:table-cell">
-                  Торговая точка
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    onClick={() => sortOrders("product_id")}
+                  >
+                    Товар
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Производство
+                  <Button
+                    variant="ghost"
+                    onClick={() => sortOrders("sale_point_id")}
+                  >
+                    Торговая точка
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
+                <TableHead className="hidden md:table-cell">
+                  <Button
+                    variant="ghost"
+                    onClick={() => sortOrders("factory_id")}
+                  >
+                    Производство
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
                   Общий вес
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Количество
+                  <Button
+                    variant="ghost"
+                    onClick={() => sortOrders("quantity")}
+                  >
+                    Количество
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
-                  Дата заказа
+                  <Button
+                    variant="ghost"
+                    onClick={() => sortOrders("order_date")}
+                  >
+                    Дата заказа
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
                 </TableHead>
                 <TableHead className="hidden md:table-cell">
                   Стоимость доставки
                 </TableHead>
-                <TableHead className="hidden md:table-cell">Статус</TableHead>
+                <TableHead className="hidden md:table-cell">
+                  <Button variant="ghost" onClick={() => sortOrders("status")}>
+                    Статус
+                    <ArrowUpDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -361,7 +454,7 @@ export default function CarrierOrdersTable() {
       </CardContent>
       <CardFooter>
         <div className="text-xs text-muted-foreground">
-          Показано заказов: <strong>{orders.length}</strong>, Выбрано:{" "}
+          Показано заказов: <strong>{filteredOrders.length}</strong>, Выбрано:{" "}
           <strong>{selectedOrders.length}</strong>
         </div>
       </CardFooter>

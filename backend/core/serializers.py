@@ -189,6 +189,7 @@ class ProductOrderSerializer(serializers.ModelSerializer):
             "status",
             "factory_id",
             "sale_point_id",
+            "delivery_cost",
         ]
 
     def get_factory_id(self, obj):
