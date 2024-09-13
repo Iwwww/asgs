@@ -1,0 +1,36 @@
+services:
+  django:
+    build:
+      context: ./backend
+      args:
+        DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+        DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
+        DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
+    restart: always
+    volumes:
+      - ./backend:/usr/src/app
+    ports:
+      - 8000:8000
+    env_file:
+      - ./.env.dev
+    environment:
+      - DEVELOPMENT=True
+    depends_on:
+      - pgdb
+
+  pgdb:
+    image: postgres
+    container_name: asgs-pgdb-dev
+    volumes:
+      - pgdbdata:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    env_file:
+      - ./.env.dev
+
+volumes:
+  pgdbdata:
